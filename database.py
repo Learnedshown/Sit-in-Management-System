@@ -57,7 +57,8 @@ def setup_database(app):
             email TEXT UNIQUE NOT NULL,
             address TEXT NOT NULL,
             sessions_remaining INTEGER NOT NULL DEFAULT 30 CHECK(sessions_remaining BETWEEN 0 AND 30),
-            total_session_used INTEGER NOT NULL DEFAULT 0 CHECK(total_session_used >= 0)
+            total_session_used INTEGER NOT NULL DEFAULT 0 CHECK(total_session_used >= 0),
+            profile_photo TEXT DEFAULT NULL
             )
 
         """)

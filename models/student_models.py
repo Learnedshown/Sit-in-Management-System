@@ -33,14 +33,15 @@ def delete_students(id_number):
 def update_student(data):
    view_students(data["id_number"])
 
-   query = """UPDATE students set first_name = ?, middle_name = ?, last_name = ?, course_level = ?, course = ?, email = ?, address = ? WHERE id_number = ?"""
+   query = """UPDATE students set first_name = ?, middle_name = ?, last_name = ?, course_level = ?, course = ?, email = ?, address = ?, profile_photo = ? WHERE id_number = ?"""
    execute(query, ( data["first_name"],
                     data["middle_name"],
                     data["last_name"],
                     data["course_level"],
                     data["course"],
                     data["email"],
-                    data["address"],  
+                    data["address"],
+                    data["profile_photo"],  
                     data["id_number"] 
                   ),
                       commit=True

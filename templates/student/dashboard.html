@@ -1,4 +1,4 @@
-{% extends "dashboardbase.html" %}
+{% extends "student/dashboardbase.html" %}
 
 {% block title %}Dashboard{% endblock %}
 
@@ -15,8 +15,8 @@
 
       <div class="card-body text-center">
         <img class="card-img rounded-circle"
-             style="max-height:8rem; max-width:8rem;"
-             src="">
+     style="max-height:8rem; max-width:8rem; object-fit:cover;"
+     src="{{ url_for('static', filename='uploads/' ~ (profile_photo or 'default.png')) }}">
 
         <hr>
 

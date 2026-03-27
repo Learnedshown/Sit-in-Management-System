@@ -1,4 +1,4 @@
-{% extends "dashboard.html" %}
+{% extends "student/dashboard.html" %}
 
 {% block title %} Edit Profile {% endblock %}
 
@@ -15,9 +15,19 @@
   {% endwith %}
 
   <div class="card p-4 shadow" style="width: 100%; max-width: 600px;">
-    <form method="POST" action="{{ url_for('update_student_route', id_number=session['user']) }}">
+    <form method="POST" action="{{ url_for('edit_profile') }}" enctype="multipart/form-data">
 
       <h3 class="text-center mb-4 fw-bold navbar-dark">Edit Profile</h3>
+
+      <!-- Profile Photo Preview -->
+      <div class="text-center mb-3">
+        {% if profile_photo %}
+          <img src="{{ url_for('static', filename='uploads/' ~ profile_photo) }}" alt="Profile Photo" class="rounded-circle mb-2" style="width:120px; height:120px; object-fit:cover;">
+        {% else %}
+          <img src="{{ url_for('static', filename='uploads/default.png') }}" alt="Profile Photo" class="rounded-circle mb-2" style="width:120px; height:120px; object-fit:cover;">
+        {% endif %}
+        <input type="file" class="form-control mt-2" name="profile_photo" accept="image/*">
+      </div>
 
       <div class="row">
         <div class="col-12 col-md-6 mb-3">
@@ -48,7 +58,11 @@
           <input type="email" class="form-control" name="email" placeholder="Email" value="{{ email|default('') }}" required>
         </div>
         <div class="col-12 col-md-6 mb-3">
-          <input type="text" class="form-control" name="course" placeholder="Course" value="{{ course|default('') }}" required>
+          <select class="form-select" name="course" required>
+            <option value="" disabled {% if not course %}selected{% endif %}>Select Course</option>
+            <option value="BSIT" {% if course == "BSIT" %}selected{% endif %}>BSIT</option>
+            <option value="BSCS" {% if course == "BSCS" %}selected{% endif %}>BSCS</option>
+          </select>
         </div>
       </div>
 
