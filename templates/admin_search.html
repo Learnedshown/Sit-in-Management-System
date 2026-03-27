@@ -1,0 +1,53 @@
+{% extends "admin_base.html" %}
+
+{% block content %}
+
+<h2>Search Student</h2>
+
+<div class="input-group mb-3">
+    <input type="text" id="idInput" class="form-control" placeholder="Enter ID Number">
+    <button class="btn btn-primary" onclick="searchStudent()">Search</button>
+</div>
+
+<div id="resultCard" class="card mt-4 d-none">
+    <div class="card-body">
+        <h4 id="name"></h4>
+        <p><strong>ID:</strong> <span id="id"></span></p>
+        <p><strong>Course:</strong> <span id="course"></span></p>
+        <p><strong>Year:</strong> <span id="year"></span></p>
+        <p><strong>Email:</strong> <span id="email"></span></p>
+        <p><strong>Address:</strong> <span id="address"></span></p>
+        <p><strong>Sessions Remaining:</strong> <span id="sessions"></span></p>
+    </div>
+</div>
+
+<p id="errorMsg" class="text-danger mt-3"></p>
+
+<script>
+function searchStudent() {
+    const id = document.getElementById("idInput").value;
+
+    fetch("/view_student/" + id)
+    .then(res => res.json())
+    .then(data => {
+        if (data.error) {
+            document.getElementById("errorMsg").innerText = data.error;
+            document.getElementById("resultCard").classList.add("d-none");
+        } else {
+            document.getElementById("errorMsg").innerText = "";
+
+            document.getElementById("name").innerText = data.first_name + " " + data.last_name;
+            document.getElementById("id").innerText = data.id_number;
+            document.getElementById("course").innerText = data.course;
+            document.getElementById("year").innerText = data.course_level;
+            document.getElementById("email").innerText = data.email;
+            document.getElementById("address").innerText = data.address;
+            document.getElementById("sessions").innerText = data.sessions_remaining;
+
+            document.getElementById("resultCard").classList.remove("d-none");
+        }
+    });
+}
+</script>
+
+{% endblock %}

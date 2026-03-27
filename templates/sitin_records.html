@@ -1,0 +1,64 @@
+{% extends "admin_base.html" %}
+
+{% block content %}
+
+<h2 class="text-center mb-4">Sit-in Records</h2>
+
+<table id="recordsTable" class="table table-bordered table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>ID Number</th>
+            <th>Name</th>
+            <th>Date</th>
+            <th>Login</th>
+            <th>Logout</th>
+            <th>PC</th>
+            <th>Lab</th>
+            <th>Action</th> <!-- ✅ NEW -->
+        </tr>
+    </thead>
+    <tbody>
+        {% for r in records %}
+        <tr>
+            <td>{{ r.id_number }}</td>
+            <td>{{ r.first_name }} {{ r.last_name }}</td>
+            <td>{{ r.session_date }}</td>
+            <td>{{ r.login_time }}</td>
+            <td>{{ r.logout_time or "Active" }}</td>
+            <td>{{ r.pc_number }}</td>
+            <td>{{ r.lab_room }}</td>
+
+            <!-- ✅ ACTION COLUMN -->
+            <td>
+                {% if not r.logout_time %}
+                <form method="POST" action="/admin/sitin/end/{{ r.session_id }}">
+                    <button class="btn btn-danger btn-sm">
+                        End
+                    </button>
+                </form>
+                {% else %}
+                <span class="text-success">Done</span>
+                {% endif %}
+            </td>
+
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<!-- DataTables -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+<script>
+$(document).ready(function () {
+    $('#recordsTable').DataTable({
+        pageLength: 10
+    });
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "admin_base.html" %}
+
+{% block content %}
+
+<h2>Student List</h2>
+
+<table class="table table-bordered table-hover">
+    <thead class="table-dark">
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Course</th>
+            <th>Year</th>
+            <th>Sessions</th>
+        </tr>
+    </thead>
+    <tbody id="studentsTable"></tbody>
+</table>
+
+<script>
+fetch("/admin/students_data")
+.then(res => res.json())
+.then(data => {
+    if(data.error){
+        document.getElementById("studentsTable").innerHTML = `<tr><td colspan="5">${data.error}</td></tr>`;
+        return;
+    }
+
+    let rows = "";
+    data.students.forEach(s => {
+        rows += `
+        <tr>
+            <td>${s.id_number}</td>
+            <td>${s.first_name} ${s.last_name}</td>
+            <td>${s.course}</td>
+            <td>${s.course_level}</td>
+            <td>${s.sessions_remaining}</td>
+        </tr>`;
+    });
+
+    document.getElementById("studentsTable").innerHTML = rows;
+});
+</script>
+
+{% endblock %}

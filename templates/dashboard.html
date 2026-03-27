@@ -1,0 +1,94 @@
+{% extends "dashboardbase.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+
+<div class="row ms-1">
+  <div class="d-flex flex-row container pt-2 gap-3" style="margin-right:18%">
+
+    <!-- Student Information -->
+    <div class="card" style="max-width:20rem;">
+      <h5 class="card-header text-white text-center" style="background-color:#144c94">
+        Student Information
+      </h5>
+
+      <div class="card-body text-center">
+        <img class="card-img rounded-circle"
+             style="max-height:8rem; max-width:8rem;"
+             src="">
+
+        <hr>
+
+        <p><strong>Name:</strong> {{ name }} </p>
+        <p><strong>Course:</strong> {{ course }} </p>
+        <p><strong>Year:</strong> {{ year }} </p>
+        <p><strong>Email:</strong> {{ email }}</p>
+        <p><strong>Address:</strong> {{ address }} </p>
+        <p><strong>Session:</strong> {{ sessions_remaining }} </p>
+      </div>
+    </div>
+
+    <!-- Announcement -->
+    <div class="card mb-4" style="width:30rem; height:32.5rem;">
+      <h5 class="card-header text-white" style="background-color:#144c94">
+        Announcement
+      </h5>
+
+      <div class="card-body" id="card-background">
+        <div style="overflow-y:auto; max-height:430px;">
+
+          <p><strong>CCS Admin | 2026-Feb-11</strong></p>
+          <div class="card-body bg-light w-100"></div>
+          <hr>
+
+          <p><strong>CCS Admin | 2024-May-08</strong></p>
+          <div class="card-body bg-light w-100">
+            <p>
+              Important Announcement: We are excited to announce the launch
+              of our new website! 🎉 Explore our latest products and services now!
+            </p>
+          </div>
+
+          <hr>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Rules and Regulations -->
+    <div class="card">
+      <div class="card-header text-white" style="background-color:#144c94">
+        Rules and Regulation
+      </div>
+
+      <div class="card-body container-fluid" style="width:32rem; height:25rem;">
+        <div style="overflow-y:auto; max-height:440px;">
+
+          <h5 class="text-center"><strong>University of Cebu</strong></h5>
+          <p class="text-center"><strong>COLLEGE OF INFORMATION & COMPUTER STUDIES</strong></p>
+
+          <p><strong>LABORATORY RULES AND REGULATIONS</strong></p>
+
+          <p>Maintain silence and discipline inside the laboratory.</p>
+          <p>Games are not allowed inside the lab.</p>
+          <p>Internet use requires instructor permission.</p>
+          <p>Downloading or installing software is prohibited.</p>
+          <p>Deleting files or changing computer setup is a major offense.</p>
+
+          <p><strong>DISCIPLINARY ACTION</strong></p>
+          <ul>
+            <li>First Offense - Suspension recommendation.</li>
+            <li>Second Offense - Heavier sanction.</li>
+          </ul>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>
+
+{% endblock %}

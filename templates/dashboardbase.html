@@ -1,0 +1,76 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dashboard{% endblock %}</title>
+    <link rel="stylesheet" href="{{url_for('static', filename='css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{url_for('static', filename='css/style.css') }}">
+</head>
+
+    <style>
+       
+        .navbar-brand,
+        .nav-link {
+            color: white !important;
+        }
+
+        .navbar-brand:hover,
+        .nav-link:hover {
+            color: blue !important;
+        }
+
+    </style>
+
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="/dashboard">Dashboard</a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-toggle="dropdown">
+            Notification
+          </a>
+          <div class="dropdown-menu bg-light">
+            <div style="overflow-x:auto; max-height:390px; width:20rem;">
+            </div>
+          </div>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="#">Home</a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="/editprofile">Edit Profile</a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="#">History</a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="#">Reservation</a>
+        </li>
+
+        <li class="nav-item">
+          <a class="btn btn-danger" href="/logout">Log out</a>
+        </li>
+
+      </ul>
+    </div>
+  </div>
+</nav>
+
+ <!-- Main content -->
+    <div class="container my-5">
+        {% block content %}
+       
+        {% endblock %}
+    </div>

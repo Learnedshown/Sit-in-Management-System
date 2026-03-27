@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Login{% endblock %}
+
+{% block content %}
+
+<div class="d-flex flex-column justify-content-center align-items-center" style="min-height: 80vh;">
+  
+    <div class="mb-3">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" style="width: 200px;">
+    </div>
+
+    <div class="card p-4 shadow" style="max-width: 400px; width: 100%;">
+        <form method="POST">
+
+            <h3 class="text-center mb-4 fw-bold">Admin Login</h3>
+
+            {% if error %}
+                <div class="alert alert-danger text-center">{{ error }}</div>
+            {% endif %}
+
+            <div class="mb-3">
+                <input type="text" name="id_number" class="form-control form-control-lg" placeholder="Admin ID" required>
+            </div>
+
+            <div class="mb-3">
+                <input type="password" name="password" class="form-control form-control-lg" placeholder="Password" required>
+            </div>
+
+            <button type="submit" class="btn btn-dark w-100 mb-2">Login as Admin</button>
+
+            <p class="text-center mb-0">
+                <a href="/login" class="text-decoration-none">Back to Student Login</a>
+            </p>
+
+        </form>
+    </div>
+
+</div>
+
+{% endblock %}
