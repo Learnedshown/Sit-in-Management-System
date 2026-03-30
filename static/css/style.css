@@ -2,3 +2,235 @@
         .nav-link {
             color: white !important;
         }
+
+body {
+      background-color: #f0f4ff;
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+    }
+
+    .register-wrapper {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .register-card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      padding: 2.5rem 2rem;
+      width: 100%;
+      max-width: 560px;
+    }
+
+    /* ── Step indicator ── */
+    .step-track {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      position: relative;
+      margin-bottom: 2.5rem;
+    }
+
+    .step-track {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+}
+
+    .step-track::before {
+      content: '';
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      right: 20px;
+      height: 2px;
+      background: #dee2e6;
+      z-index: 0;
+    }
+
+    .step-progress {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      height: 2px;
+      background: #0d6efd;
+      z-index: 1;
+      width: 0%; /* 👈 important */
+      transition: width 0.4s ease;
+    }
+
+    .step-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      z-index: 2;
+      flex: 1;
+    }
+
+    .step-circle {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid #dee2e6;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 14px;
+      color: #adb5bd;
+      transition: all 0.3s ease;
+    }
+
+    .step-circle.active {
+      border-color: #0d6efd;
+      color: #0d6efd;
+      background: #eef2ff;
+    }
+
+    .step-circle.completed {
+      border-color: #0d6efd;
+      background: #0d6efd;
+      color: #fff;
+    }
+
+    .step-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: #adb5bd;
+      text-align: center;
+      transition: color 0.3s;
+    }
+
+    .step-label.active {
+      color: #0d6efd;
+    }
+
+    .step-label.completed {
+      color: #198754;
+    }
+
+    /* ── Form panels ── */
+    .form-panel {
+      display: none;
+    }
+
+    .form-panel.active {
+      display: block;
+    }
+
+    .panel-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 0.25rem;
+    }
+
+    .panel-subtitle {
+      font-size: 0.875rem;
+      color: #6c757d;
+      margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+      font-weight: 500;
+      font-size: 0.875rem;
+      color: #374151;
+      margin-bottom: 0.35rem;
+    }
+
+    .form-control,
+    .form-select {
+      border-radius: 8px;
+      border-color: #d1d5db;
+      font-size: 0.9rem;
+      padding: 0.55rem 0.85rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+      border-color: #0d6efd;
+      box-shadow: 0 0 0 3px rgba(13,110,253,0.15);
+    }
+
+    .form-control.is-invalid,
+    .form-select.is-invalid {
+      border-color: #dc3545;
+      box-shadow: none;
+    }
+
+    .invalid-feedback {
+      font-size: 0.78rem;
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      border-radius: 8px;
+      font-weight: 600;
+      padding: 0.55rem 1.4rem;
+      font-size: 0.9rem;
+    }
+
+    .btn-nav-row {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 1.75rem;
+    }
+
+    .btn-nav-row.end {
+      justify-content: flex-end;
+    }
+
+    /* ── Success panel ── */
+    #successPanel {
+      display: none;
+      text-align: center;
+      padding: 1rem 0;
+    }
+
+    .success-icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: #d1fae5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.25rem;
+    }
+
+    .success-icon svg {
+      width: 38px;
+      height: 38px;
+      stroke: #059669;
+    }
+
+    .login-link {
+      display: block;
+      text-align: center;
+      margin-top: 1.5rem;
+      font-size: 0.875rem;
+      color: #6c757d;
+    }
+
+    .login-link a {
+      color: #0d6efd;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .login-link a:hover {
+      text-decoration: underline;
+    }
+
+    .optional-label {
+      font-size: 0.75rem;
+      color: #9ca3af;
+      font-weight: 400;
+    }

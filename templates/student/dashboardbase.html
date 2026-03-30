@@ -1,66 +1,269 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Dashboard{% endblock %}</title>
-    <link rel="stylesheet" href="{{url_for('static', filename='css/bootstrap.min.css') }}">
-    <link rel="stylesheet" href="{{url_for('static', filename='css/style.css') }}">
+    <title>{% block title %}Dashboard{% endblock %} | CCS Lab</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        :root {
+            --uc-blue: #144c94;
+            --uc-blue-dark: #0d3870;
+            --uc-blue-light: #1a5eab;
+            --sidebar-width: 260px;
+        }
+
+        body {
+            background-color: #f0f4f8;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+        }
+
+        /* ── Top Navbar ── */
+        .top-navbar {
+            background: linear-gradient(135deg, var(--uc-blue-dark) 0%, var(--uc-blue) 60%, var(--uc-blue-light) 100%);
+            box-shadow: 0 2px 12px rgba(20, 76, 148, 0.35);
+            position: sticky;
+            top: 0;
+            z-index: 1030;
+            min-height: 60px;
+        }
+
+        .top-navbar .navbar-brand {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #fff !important;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .top-navbar .navbar-brand .brand-icon {
+            width: 36px;
+            height: 36px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .top-navbar .nav-link {
+            color: rgba(255,255,255,0.88) !important;
+            font-size: 0.875rem;
+            font-weight: 500;
+            padding: 0.45rem 0.75rem !important;
+            border-radius: 6px;
+            transition: background 0.18s, color 0.18s;
+        }
+
+        .top-navbar .nav-link:hover,
+        .top-navbar .nav-link.active {
+            color: #fff !important;
+            background: rgba(255,255,255,0.15);
+        }
+
+        .top-navbar .btn-logout {
+            background: rgba(220, 53, 69, 0.85);
+            border: none;
+            color: #fff;
+            font-size: 0.875rem;
+            font-weight: 600;
+            padding: 0.4rem 1rem;
+            border-radius: 6px;
+            transition: background 0.18s;
+            text-decoration: none;
+        }
+
+        .top-navbar .btn-logout:hover {
+            background: #c82333;
+            color: #fff;
+        }
+
+        /* ── Notification dropdown ── */
+        .notif-toggle {
+            position: relative;
+        }
+
+        .notif-toggle .badge-dot {
+            position: absolute;
+            top: 4px;
+            right: 6px;
+            width: 8px;
+            height: 8px;
+            background: #ff4d6d;
+            border-radius: 50%;
+            border: 2px solid var(--uc-blue);
+        }
+
+        .notif-dropdown {
+            min-width: 300px;
+            border: none;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            border-radius: 10px;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .notif-dropdown-header {
+            background: var(--uc-blue);
+            color: #fff;
+            padding: 10px 16px;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .notif-dropdown-body {
+            max-height: 350px;
+            overflow-y: auto;
+            padding: 8px 0;
+        }
+
+        /* ── Main layout ── */
+        .page-wrapper {
+            padding: 1.75rem 1.5rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .page-header h4 {
+            color: var(--uc-blue-dark);
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .page-header .breadcrumb {
+            font-size: 0.8rem;
+            margin: 0;
+        }
+
+        /* ── Cards ── */
+        .dash-card {
+            border: none;
+            border-radius: 14px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+            overflow: hidden;
+            height: 100%;
+        }
+
+        .dash-card .card-header-custom {
+            background: linear-gradient(135deg, var(--uc-blue-dark), var(--uc-blue));
+            color: #fff;
+            padding: 14px 20px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            letter-spacing: 0.4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dash-card .card-header-custom .header-icon {
+            width: 26px;
+            height: 26px;
+            background: rgba(255,255,255,0.18);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+        }
+
+        .dash-card .card-body {
+            padding: 1.25rem 1.5rem;
+            background: #fff;
+        }
+
+        /* ── Scrollable content areas ── */
+        .scroll-area {
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #cdd5e0 transparent;
+        }
+
+        .scroll-area::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .scroll-area::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .scroll-area::-webkit-scrollbar-thumb {
+            background: #cdd5e0;
+            border-radius: 4px;
+        }
+
+        /* ── Responsive toggler ── */
+        .navbar-toggler {
+            border-color: rgba(255,255,255,0.4);
+        }
+
+        .navbar-toggler-icon {
+            filter: invert(1);
+        }
+    </style>
 </head>
 
-    <style>
-       
-        .navbar-brand,
-        .nav-link {
-            color: white !important;
-        }
-
-        .navbar-brand:hover,
-        .nav-link:hover {
-            color: blue !important;
-        }
-
-    </style>
-
 <body>
-  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="/dashboard">Dashboard</a>
 
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+<!-- ══════════════ TOP NAVBAR ══════════════ -->
+<nav class="navbar navbar-expand-lg top-navbar">
+  <div class="container-fluid px-3">
+
+    <a class="navbar-brand" href="/dashboard">
+      <div class="brand-icon">&#127979;</div>
+      CCS Lab Portal
+    </a>
+
+    <button class="navbar-toggler" type="button"
+            data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+            aria-controls="mainNavbar" aria-expanded="false">
       <span class="navbar-toggler-icon"></span>
     </button>
 
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav ms-auto">
+    <div class="collapse navbar-collapse" id="mainNavbar">
+      <ul class="navbar-nav ms-auto align-items-lg-center gap-1">
 
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-toggle="dropdown">
-            Notification
+        <!-- Notification -->
+        <li class="nav-item dropdown notif-toggle">
+          <a class="nav-link dropdown-toggle" href="#" id="notifDropdown"
+             role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            &#128276; Notifications
           </a>
-          <div class="dropdown-menu bg-light">
-            <div style="overflow-x:auto; max-height:390px; width:20rem;">
+          <div class="dropdown-menu notif-dropdown" aria-labelledby="notifDropdown">
+            <div class="notif-dropdown-header">Notifications</div>
+            <div class="notif-dropdown-body px-3 py-2">
+              <p class="text-muted small mb-0">No new notifications.</p>
             </div>
           </div>
         </li>
 
         <li class="nav-item">
-          <a class="nav-link" href="#">Home</a>
+          <a class="nav-link" href="/dashboard">&#127968; Home</a>
         </li>
 
         <li class="nav-item">
-          <a class="nav-link" href="/editprofile">Edit Profile</a>
+          <a class="nav-link" href="/editprofile">&#9998; Edit Profile</a>
         </li>
 
         <li class="nav-item">
-          <a class="nav-link" href="#">History</a>
+          <a class="nav-link" href="#">&#128196; History</a>
         </li>
 
         <li class="nav-item">
-          <a class="nav-link" href="#">Reservation</a>
+          <a class="nav-link" href="#">&#128197; Reservation</a>
         </li>
 
-        <li class="nav-item">
-          <a class="btn btn-danger" href="/logout">Log out</a>
+        <li class="nav-item ms-lg-2">
+          <a class="btn-logout" href="/logout">&#10148; Log out</a>
         </li>
 
       </ul>
@@ -68,9 +271,11 @@
   </div>
 </nav>
 
- <!-- Main content -->
-    <div class="container my-5">
-        {% block content %}
-       
-        {% endblock %}
-    </div>
+<!-- ══════════════ MAIN CONTENT ══════════════ -->
+<div class="page-wrapper">
+    {% block content %}{% endblock %}
+</div>
+
+<script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+</body>
+</html>

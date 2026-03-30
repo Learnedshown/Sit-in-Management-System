@@ -3,99 +3,331 @@
 {% block title %} Register {% endblock %}
 
 {% block content %}
-<div class="d-flex flex-column justify-content-center align-items-center" style="min-height: 80vh;">
-      {% with messages = get_flashed_messages() %}
-  {% if messages %}
-    <div class="alert alert-warning">
-      {% for message in messages %}
-        <div>{{ message }}</div>
-      {% endfor %}
+<div class="register-wrapper">
+  <div class="register-card">
+
+    <!-- Header -->
+    <div class="text-center mb-4">
+      <h1 class="fw-bold fs-3 text-dark mb-1">Create an Account</h1>
+      <p class="text-muted small">Sign up to get started</p>
     </div>
-  {% endif %}
-{% endwith %}
-<div class="d-flex justify-content-center align-items-center" style="min-height: 80vh;">
-  <div class="card p-4 shadow" style="width: 100%; max-width: 600px;">
-    <form method="POST">
-      <h3 class="text-center mb-4 fw-bold navbar-dark">Sign Up</h3>
 
-      <!-- ID Number -->
-      <div class="row">
-        <div class="col-12 mb-3">
-          <input type="text" class="form-control" name="id_number" placeholder="ID Number" value="{{ id_number|default('') }}" required maxlength="8">
+    <!-- Step Indicator -->
+    <div class="step-track" id="stepTrack">
+      <div class="step-progress" id="stepProgress" style="width:0%"></div>
+      <div class="step-item">
+        <div class="step-circle active" id="circle-0">1</div>
+        <span class="step-label active" id="label-0">Personal Info</span>
+      </div>
+      <div class="step-item">
+        <div class="step-circle" id="circle-1">2</div>
+        <span class="step-label" id="label-1">Account &amp; Academic</span>
+      </div>
+    </div>
+
+    <!-- Success Panel -->
+    <div id="successPanel">
+      <div class="success-icon">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+        </svg>
+      </div>
+      <h2 class="fw-bold fs-4 mb-2">Registration Complete!</h2>
+      <p class="text-muted" id="successMsg">Your account has been created successfully.</p>
+      <a href="/" class="btn btn-primary mt-3 px-5">Back to Login</a>
+    </div>
+
+
+    <form id="registerForm" method="POST" action="{{ url_for('register_student_route') }}">
+    <!-- Step 1: Personal Info -->
+    <div class="form-panel active" id="panel-0">
+      <p class="panel-title">Personal Info</p>
+      <p class="panel-subtitle">Your basic information</p>
+
+      <div class="mb-3">
+        <label class="form-label" for="id_number">ID Number</label>
+        <input type="text" class="form-control" id="id_number" name="id_number"
+               placeholder="ID Number" maxlength="8" data-testid="input-id-number">
+        <div class="invalid-feedback" id="err-id_number"></div>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-12 col-md-6">
+          <label class="form-label" for="first_name">First Name</label>
+          <input type="text" class="form-control" id="first_name" name="first_name"
+                 placeholder="First Name" maxlength="30" data-testid="input-first-name">
+          <div class="invalid-feedback" id="err-first_name"></div>
+        </div>
+        <div class="col-12 col-md-6">
+          <label class="form-label" for="last_name">Last Name</label>
+          <input type="text" class="form-control" id="last_name" name="last_name"
+                 placeholder="Last Name" maxlength="30" data-testid="input-last-name">
+          <div class="invalid-feedback" id="err-last_name"></div>
         </div>
       </div>
 
-      <!-- First & Last Name -->
-      <div class="row">
-        <div class="col-12 col-md-6 mb-3">
-          <input type="text" class="form-control" name="first_name" placeholder="First Name" maxlength="30" value="{{ first_name|default('') }}" required>
+      <div class="mb-3">
+        <label class="form-label" for="middle_name">
+          Middle Name <span class="optional-label">(optional)</span>
+        </label>
+        <input type="text" class="form-control" id="middle_name" name="middle_name"
+               placeholder="Middle Name" maxlength="30" data-testid="input-middle-name">
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-12 col-md-6">
+          <label class="form-label" for="password">Password</label>
+          <input type="password" class="form-control" id="password" name="password"
+                 placeholder="Password" data-testid="input-password">
+          <div class="invalid-feedback" id="err-password"></div>
         </div>
-        <div class="col-12 col-md-6 mb-3">
-          <input type="text" class="form-control" name="last_name" placeholder="Last Name" maxlength="30" value="{{ last_name|default('') }}" required>
+        <div class="col-12 col-md-6">
+          <label class="form-label" for="confirm_password">Confirm Password</label>
+          <input type="password" class="form-control" id="confirm_password" name="confirm_password"
+                 placeholder="Confirm Password" data-testid="input-confirm-password">
+          <div class="invalid-feedback" id="err-confirm_password"></div>
         </div>
       </div>
 
-      <!-- Middle Name -->
-      <div class="row">
-        <div class="col-12 mb-3">
-          <input type="text" class="form-control" name="middle_name" placeholder="Middle Name" maxlength="30" value="{{ middle_name|default('') }}">
-        </div>
+      <div class="btn-nav-row end">
+        <button type="button" class="btn btn-primary" onclick="nextStep(0)">
+          Next
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="ms-1 bi bi-chevron-right" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 2: Account & Academic -->
+    <div class="form-panel" id="panel-1">
+      <p class="panel-title">Account &amp; Academic</p>
+      <p class="panel-subtitle">Set up your credentials and course details</p>
+
+      <div class="mb-3">
+        <label class="form-label" for="email">Email</label>
+        <input type="email" class="form-control" id="email" name="email"
+               placeholder="Email" data-testid="input-email">
+        <div class="invalid-feedback" id="err-email"></div>
       </div>
 
-      <!-- Password & Confirm Password -->
-      <div class="row">
-        <div class="col-12 col-md-6 mb-3">
-          <input type="password" class="form-control" name="password" placeholder="Password" required>
-        </div>
-        <div class="col-12 col-md-6 mb-3">
-          <input type="password" class="form-control" name="confirm_password" placeholder="Confirm Password" required>
-        </div>
-      </div>
-
-      <!-- Email -->
-      <div class="row">
-        <div class="col-12 mb-3">
-          <input type="email" class="form-control" name="email" placeholder="Email" value="{{ email|default('') }}" required>
-        </div>
-      </div>
-
-      <!-- Course Level & Course -->
-      <div class="row">
-        <div class="col-12 col-md-6 mb-3">
-          <select class="form-select" name="course_level" required>
-            <option value="" disabled {% if not course_level %}selected{% endif %}>Select Level</option>
-            <option value="1" {% if course_level == '1' %}selected{% endif %}>1</option>
-            <option value="2" {% if course_level == '2' %}selected{% endif %}>2</option>
-            <option value="3" {% if course_level == '3' %}selected{% endif %}>3</option>
-            <option value="4" {% if course_level == '4' %}selected{% endif %}>4</option>
+      <div class="row g-3 mb-3">
+        <div class="col-12 col-md-6">
+          <label class="form-label" for="course_level">Year Level</label>
+          <select class="form-select" id="course_level" name="course_level" data-testid="select-course-level">
+            <option value="">Select Level</option>
+            <option value="1">Year 1</option>
+            <option value="2">Year 2</option>
+            <option value="3">Year 3</option>
+            <option value="4">Year 4</option>
           </select>
+          <div class="invalid-feedback" id="err-course_level"></div>
         </div>
-        <div class="col-12 col-md-6 mb-3">
-          <select class="form-select" name="course" required>
-            <option value="" disabled {% if not course %}selected{% endif %}>Select Course</option>
-            <option value="BSIT" {% if course == "BSIT" %}selected{% endif %}>BSIT</option>
-            <option value="BSCS" {% if course == "BSCS" %}selected{% endif %}>BSCS</option>
+        <div class="col-12 col-md-6">
+          <label class="form-label" for="course">Course</label>
+          <select class="form-select" id="course" name="course" data-testid="select-course">
+            <option value="">Select Course</option>
+            <option value="BSIT">BSIT</option>
+            <option value="BSCS">BSCS</option>
           </select>
+          <div class="invalid-feedback" id="err-course"></div>
         </div>
       </div>
 
-      <!-- Address -->
-      <div class="row">
-        <div class="col-12 mb-3">
-          <input type="text" class="form-control" name="address" placeholder="Address" value="{{ address|default('') }}" required>
-        </div>
+      <div class="mb-3">
+        <label class="form-label" for="address">Address</label>
+        <input type="text" class="form-control" id="address" name="address"
+               placeholder="Address" data-testid="input-address">
+        <div class="invalid-feedback" id="err-address"></div>
       </div>
 
-      <!-- Submit -->
-      <button type="submit" class="btn btn-primary w-100 mb-2">Register</button>
-
-      <!-- Back to Login -->
-      <p class="text-center mb-0">
-        <a href="/">Back to Login</a>
-      </p>
+      <div class="btn-nav-row">
+        <button type="button" class="btn btn-outline-secondary" onclick="prevStep(1)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="me-1 bi bi-chevron-left" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
+          </svg>
+          Back
+        </button>
+        <button type="button" class="btn btn-primary" onclick="submitForm()">
+          Register
+        </button>
+      </div>
+    </div>
     </form>
+    <!-- Login link (hidden on success) -->
+    <p class="login-link" id="loginLink">
+      Already have an account? <a href="/">Back to Login</a>
+    </p>
   </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  const TOTAL_STEPS = 2;
+  let currentStep = 0;
+
+  // ── Validation rules ──────────────────────────────────────────────────────
+  const validators = {
+    0: () => {
+      let ok = true;
+      ok = require('id_number',   'ID Number is required')                         && ok;
+      ok = require('first_name',  'First Name is required')                        && ok;
+      ok = require('last_name',   'Last Name is required')                         && ok;
+      ok = requireMinLen('password', 8, 'Password must be at least 8 characters') && ok;
+      ok = requireMatch('confirm_password', 'password', 'Passwords do not match') && ok;
+      return ok;
+    },
+    1: () => {
+      let ok = true;
+      ok = requireEmail('email')                               && ok;
+      ok = require('course_level', 'Please select a year level') && ok;
+      ok = require('course',       'Please select a course')     && ok;
+      ok = require('address',      'Address is required')        && ok;
+      return ok;
+    }
+  };
+
+  function getVal(id)   { return document.getElementById(id).value.trim(); }
+  function getEl(id)    { return document.getElementById(id); }
+
+  function setError(id, msg) {
+    const el = getEl(id);
+    const errEl = getEl('err-' + id);
+    el.classList.add('is-invalid');
+    if (errEl) errEl.textContent = msg;
+  }
+
+  function clearError(id) {
+    const el = getEl(id);
+    if (!el) return;
+    el.classList.remove('is-invalid');
+    const errEl = getEl('err-' + id);
+    if (errEl) errEl.textContent = '';
+  }
+
+  function require(id, msg) {
+    clearError(id);
+    if (!getVal(id)) { setError(id, msg); return false; }
+    return true;
+  }
+
+  function requireEmail(id) {
+    clearError(id);
+    const val = getVal(id);
+    if (!val) { setError(id, 'Email is required'); return false; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) { setError(id, 'Please enter a valid email'); return false; }
+    return true;
+  }
+
+  function requireMinLen(id, min, msg) {
+    clearError(id);
+    const val = getVal(id);
+    if (!val) { setError(id, 'Password is required'); return false; }
+    if (val.length < min) { setError(id, msg); return false; }
+    return true;
+  }
+
+  function requireMatch(id, matchId, msg) {
+    clearError(id);
+    if (!getVal(id)) { setError(id, 'Please confirm your password'); return false; }
+    if (getVal(id) !== getVal(matchId)) { setError(id, msg); return false; }
+    return true;
+  }
+
+  // Clear errors on input
+  document.querySelectorAll('.form-control, .form-select').forEach(el => {
+    el.addEventListener('input', () => clearError(el.id));
+    el.addEventListener('change', () => clearError(el.id));
+  });
+
+  // ── Step navigation ───────────────────────────────────────────────────────
+  function updateIndicator(step) {
+    for (let i = 0; i < TOTAL_STEPS; i++) {
+      const circle = getEl('circle-' + i);
+      const label  = getEl('label-' + i);
+      circle.classList.remove('active', 'completed');
+      label.classList.remove('active', 'completed');
+
+      if (i < step) {
+        circle.classList.add('completed');
+        circle.innerHTML = checkSVG();
+        label.classList.add('completed');
+      } else if (i === step) {
+        circle.classList.add('active');
+        circle.textContent = i + 1;
+        label.classList.add('active');
+      } else {
+        circle.textContent = i + 1;
+      }
+    }
+    // Progress bar: 0% at step 0, 100% at step 1
+    const pct = step === 0 ? 0 : 100;
+    getEl('stepProgress').style.width = pct + '%';
+  }
+
+  function checkSVG() {
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+      <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/>
+    </svg>`;
+  }
+
+  function showPanel(step) {
+    document.querySelectorAll('.form-panel').forEach((p, i) => {
+      p.classList.toggle('active', i === step);
+    });
+    updateIndicator(step);
+    currentStep = step;
+  }
+
+  function nextStep(fromStep) {
+    if (!validators[fromStep]()) return;
+    showPanel(fromStep + 1);
+  }
+
+  function prevStep(fromStep) {
+    showPanel(fromStep - 1);
+  }
+
+  // ── Submit ────────────────────────────────────────────────────────────────
+function submitForm() {
+  if (!validators[1]()) return;
+
+  const form = document.getElementById("registerForm");
+  const formData = new FormData(form);
+
+  fetch(form.action, {
+    method: "POST",
+    body: formData
+  })
+  .then(res => {
+    if (res.redirected) {
+      window.location.href = res.url;
+      return null;
+    }
+    return res.text();
+  })
+  .then(data => {
+    if (!data) return;
+
+    console.log("Server response:", data);
+
+    // ✅ ONLY SHOW SUCCESS AFTER RESPONSE
+    document.querySelectorAll('.form-panel').forEach(p => p.style.display = 'none');
+    getEl('stepTrack').style.display = 'none';
+    document.querySelector('.text-center.mb-4').style.display = 'none';
+    getEl('loginLink').style.display = 'none';
+
+    getEl('successMsg').textContent =
+      `Welcome, ${getVal('first_name')}! Your account has been created successfully.`;
+
+    getEl('successPanel').style.display = 'block';
+  })
+  .catch(err => {
+    console.error("Error:", err);
+    alert("Something went wrong!");
+  });
+}
+</script>
 
 
 {% endblock %}

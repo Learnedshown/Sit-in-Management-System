@@ -12,7 +12,7 @@
                 <p><strong>Currently Sit-in:</strong> {{ current_count }}</p>
                 <p><strong>Total Sit-in:</strong> {{ total_sitin }}</p>
 
-                <canvas id="courseChart" width="400" height="400"></canvas>
+                <canvas id="courseChart" width="300" height="300"></canvas>
             </div>
         </div>
     </div>
@@ -20,21 +20,24 @@
     <!-- Announcement Panel -->
     <div class="col-md-6">
         <div class="card mb-3">
-            <div class="card-header bg-primary text-white">Announcement</div>
-            <div class="card-body">
-                <form method="POST" action="/admin/announcement">
-                    <textarea name="announcement" class="form-control mb-2" placeholder="New Announcement"></textarea>
-                    <button type="submit" class="btn btn-success">Submit</button>
-                </form>
+        <div class="card-header bg-primary text-white">Announcements</div>
+        <div class="card-body">
+        <!-- Form to post new announcement -->
+        <form method="POST" action="{{ url_for('admin_dashboard') }}">
+            <textarea name="content" class="form-control mb-2" placeholder="New Announcement" required></textarea>
+            <button type="submit" class="btn btn-success">Submit</button>
+        </form>
 
-                <hr>
-                <h5>Posted Announcements</h5>
-                <div id="announcements">
-                    <!-- Example: fetch from database or hardcode for now -->
-                    <p><strong>CCS Admin | 2026-Feb-11</strong><br>Welcome to the new portal!</p>
-                    <p><strong>CCS Admin | 2024-May-08</strong><br>Important Announcement: Explore our services now.</p>
-                </div>
+        <hr>
+        <h5>Posted Announcements</h5>
+            <div id="announcements">
+                    {% for ann in announcements %}
+                        <p><strong>CSS Admin | {{ ann.created_at }}</strong><br>{{ ann.content }}</p>
+                    {% else %}
+                        <p>No announcements yet.</p>
+                    {% endfor %}
             </div>
+        </div>
         </div>
     </div>
 </div>

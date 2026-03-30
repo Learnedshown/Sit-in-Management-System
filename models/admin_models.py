@@ -39,6 +39,9 @@ def start_sitin(data):
 
     if not student:
         raise Exception("Student not found")
+    
+    if is_already_sitin(student["id"]):
+        raise Exception("Student already has an active session!")
 
     if student["sessions_remaining"] <= 0:
         raise Exception("No sessions remaining")
@@ -48,14 +51,15 @@ def start_sitin(data):
     # ✅ INSERT SESSION HISTORY
     execute("""
         INSERT INTO sessions_history 
-        (student_id, login_time, session_date, pc_number, lab_room)
-        VALUES (?, ?, ?, ?, ?)
+        (student_id, login_time, session_date, pc_number, lab_room, purpose)
+        VALUES (?, ?, ?, ?, ?, ?)
     """, (
         student["id"],
         now.strftime("%H:%M:%S"),
         now.strftime("%Y-%m-%d"),
         data.get("pc_number"),
-        data.get("lab_room")
+        data.get("lab_room"),
+        data.get("purpose")
     ), commit=True)
 
     # ✅ UPDATE SESSION (REUSE LOGIC STYLE)
@@ -80,18 +84,31 @@ def end_sitin(session_id):
     """, (now.strftime("%H:%M:%S"), session_id), commit=True)
 
 
-# ---------------------------
-# VIEW CURRENT SIT-IN
-# ---------------------------
-def view_current_sitin():
-    return execute("""
-        SELECT sh.session_id, s.id_number, s.first_name, s.last_name,
-               sh.login_time, sh.pc_number, sh.lab_room
-        FROM sessions_history sh
-        JOIN students s ON sh.student_id = s.id
-        WHERE sh.logout_time IS NULL
-    """, fetchall=True)
 
+
+
+def view_current_sitin():
+    query = """
+    SELECT 
+        sh.session_id AS sit_id,
+        s.id_number,
+        s.first_name || ' ' || s.last_name AS name,
+        sh.purpose,
+        sh.lab_room AS sit_lab,
+        sh.pc_number AS session,
+        CASE 
+            WHEN sh.logout_time IS NULL THEN 'Active'
+            ELSE 'Ended'
+        END AS status,
+        sh.login_time
+    FROM sessions_history sh
+    JOIN students s ON sh.student_id = s.id
+    WHERE sh.logout_time IS NULL
+    ORDER BY sh.login_time DESC
+    """
+
+    sitins = execute(query, fetchall=True)
+    return sitins
 
 # ---------------------------
 # VIEW SIT-IN RECORDS
@@ -115,3 +132,28 @@ def admin_update_student(data):
 
 def admin_delete_student(id_number):
     return delete_students(id_number)  # ✅ reused
+
+
+#ADMIN ANNOUNCEMENT
+def add_announcement(data):
+    query = """ INSERT into announcements (content) 
+                VALUES (?)
+            """
+    execute(query, (data["content"],), commit=True )
+
+def get_announcement():
+    query = "SELECT * FROM announcements ORDER BY created_at DESC"
+    return execute(query, fetchall=True)
+
+def view_all_sitin_purposes():
+    return execute("""
+        SELECT purpose
+        FROM sessions_history
+    """, fetchall=True)
+
+def is_already_sitin(student_id):
+    return execute("""
+        SELECT 1 FROM sessions_history
+        WHERE student_id = ?
+        AND logout_time IS NULL
+    """, (student_id,), fetchone=True)

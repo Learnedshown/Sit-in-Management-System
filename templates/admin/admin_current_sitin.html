@@ -1,0 +1,47 @@
+{% extends "admin/admin_base.html" %}
+
+{% block content %}
+<h2 class="text-center mb-4">Current Sit-ins</h2>
+
+<table class="table table-bordered table-striped">
+    <thead class="table-primary">
+        <tr>
+            <th>Sit ID</th>
+            <th>ID Number</th>
+            <th>Name</th>
+            <th>Purpose</th>
+            <th>Lab</th>
+            <th>PC/Session</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% if current %}
+            {% for sitin in current %}
+            <tr>
+                <td>{{ sitin.sit_id }}</td>
+                <td>{{ sitin.id_number }}</td>
+                <td>{{ sitin.name }}</td>
+                <td>{{ sitin.purpose }}</td>
+                <td>{{ sitin.sit_lab }}</td>
+                <td>{{ sitin.session }}</td>
+                <td>{{ sitin.status }}</td>
+                <td>
+                    <form action="{{ url_for('admin_end_sitin', session_id=sitin.sit_id) }}" method="post">
+                        <button type="submit" class="btn btn-sm btn-danger" {% if sitin.status != 'Active' %}disabled{% endif %}>
+                            Logout
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        {% else %}
+            <tr>
+                <td colspan="8" class="text-center">No current sit-ins</td>
+            </tr>
+        {% endif %}
+    </tbody>
+</table>
+
+{% endblock %}

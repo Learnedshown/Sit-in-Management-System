@@ -4,91 +4,189 @@
 
 {% block content %}
 
-<div class="row ms-1">
-  <div class="d-flex flex-row container pt-2 gap-3" style="margin-right:18%">
+<!-- Page Header -->
+<div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+  <div>
+    <h4>&#128218; Student Dashboard</h4>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="/dashboard" class="text-decoration-none">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+      </ol>
+    </nav>
+  </div>
+  <span class="badge rounded-pill" style="background-color:#144c94; font-size:0.75rem; padding:6px 12px;">
+    &#9679; Active Session
+  </span>
+</div>
 
-    <!-- Student Information -->
-    <div class="card" style="max-width:20rem;">
-      <h5 class="card-header text-white text-center" style="background-color:#144c94">
+<!-- Dashboard Grid -->
+<div class="row g-4">
+
+  <!-- ── Student Information ── -->
+  <div class="col-12 col-lg-3">
+    <div class="dash-card card">
+      <div class="card-header-custom">
+        <div class="header-icon">&#128100;</div>
         Student Information
-      </h5>
+      </div>
+      <div class="card-body text-center p-4">
 
-      <div class="card-body text-center">
-        <img class="card-img rounded-circle"
-     style="max-height:8rem; max-width:8rem; object-fit:cover;"
-     src="{{ url_for('static', filename='uploads/' ~ (profile_photo or 'default.png')) }}">
+        <!-- Profile photo -->
+        <div class="position-relative d-inline-block mb-3">
+          <img class="rounded-circle border border-3"
+               style="width:100px; height:100px; object-fit:cover; border-color:#144c94 !important;"
+               src="{{ url_for('static', filename='uploads/' ~ (profile_photo or 'default.png')) }}"
+               alt="Profile Photo">
+          <a href="/editprofile"
+             class="position-absolute bottom-0 end-0 rounded-circle d-flex align-items-center justify-content-center"
+             style="width:26px;height:26px;background:#144c94;color:#fff;font-size:0.7rem;text-decoration:none;"
+             title="Edit Photo">&#9998;</a>
+        </div>
 
-        <hr>
+        <h6 class="fw-bold mb-0" style="color:#144c94;">{{ name }}</h6>
+        <p class="text-muted small mb-3">{{ course }} &bull; Year {{ year }}</p>
 
-        <p><strong>Name:</strong> {{ name }} </p>
-        <p><strong>Course:</strong> {{ course }} </p>
-        <p><strong>Year:</strong> {{ year }} </p>
-        <p><strong>Email:</strong> {{ email }}</p>
-        <p><strong>Address:</strong> {{ address }} </p>
-        <p><strong>Session:</strong> {{ sessions_remaining }} </p>
+        <div class="d-flex flex-column gap-2 text-start">
+
+          <div class="d-flex align-items-start gap-2 px-2 py-2 rounded-3" style="background:#f0f4f8;">
+            <span style="color:#144c94;">&#128231;</span>
+            <div>
+              <div class="text-muted" style="font-size:0.7rem; line-height:1;">Email</div>
+              <div style="font-size:0.82rem; word-break:break-all;">{{ email }}</div>
+            </div>
+          </div>
+
+          <div class="d-flex align-items-start gap-2 px-2 py-2 rounded-3" style="background:#f0f4f8;">
+            <span style="color:#144c94;">&#128205;</span>
+            <div>
+              <div class="text-muted" style="font-size:0.7rem; line-height:1;">Address</div>
+              <div style="font-size:0.82rem;">{{ address }}</div>
+            </div>
+          </div>
+
+          <div class="d-flex align-items-center gap-2 px-2 py-2 rounded-3"
+               style="background: linear-gradient(135deg,#e8f0fb,#d0e1ff);">
+            <span style="color:#144c94;">&#128336;</span>
+            <div>
+              <div class="text-muted" style="font-size:0.7rem; line-height:1;">Sessions Remaining</div>
+              <div class="fw-bold" style="color:#144c94; font-size:1.1rem;">{{ sessions_remaining }}</div>
+            </div>
+          </div>
+
+        </div>
+
+        <a href="/editprofile"
+           class="btn btn-sm w-100 mt-3 fw-semibold"
+           style="background:#144c94; color:#fff; border-radius:8px;">
+          Edit Profile
+        </a>
+
       </div>
     </div>
+  </div>
 
-    <!-- Announcement -->
-    <div class="card mb-4" style="width:30rem; height:32.5rem;">
-      <h5 class="card-header text-white" style="background-color:#144c94">
-        Announcement
-      </h5>
+  <!-- ── Announcements ── -->
+  <div class="col-12 col-lg-5">
+    <div class="dash-card card">
+      <div class="card-header-custom">
+        <div class="header-icon">&#128226;</div>
+        Announcements
+      </div>
+      <div class="card-body p-0">
+        <div class="scroll-area p-3" style="max-height:480px;">
 
-      <div class="card-body" id="card-background">
-        <div style="overflow-y:auto; max-height:430px;">
+          {% for ann in announcements %}
+            <div class="mb-3 p-3 rounded-3" style="border-left:4px solid #144c94; background:#f8faff;">
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge rounded-pill"
+                      style="background:#144c94; font-size:0.68rem; font-weight:600;">
+                  CCS Admin
+                </span>
+                <span class="text-muted" style="font-size:0.75rem;">{{ ann.created_at }}</span>
+              </div>
+              <p class="mb-0" style="font-size:0.875rem; color:#374151;">{{ ann.content }}</p>
+            </div>
+          {% else %}
+            <div class="text-center py-5 text-muted">
+              <div style="font-size:2.5rem; margin-bottom:8px;">&#128226;</div>
+              <p class="mb-0 small">No announcements yet. Check back later!</p>
+            </div>
+          {% endfor %}
 
-          <p><strong>CCS Admin | 2026-Feb-11</strong></p>
-          <div class="card-body bg-light w-100"></div>
-          <hr>
+        </div>
+      </div>
+    </div>
+  </div>
 
-          <p><strong>CCS Admin | 2024-May-08</strong></p>
-          <div class="card-body bg-light w-100">
-            <p>
-              Important Announcement: We are excited to announce the launch
-              of our new website! 🎉 Explore our latest products and services now!
+  <!-- ── Rules and Regulations ── -->
+  <div class="col-12 col-lg-4">
+    <div class="dash-card card">
+      <div class="card-header-custom">
+        <div class="header-icon">&#128196;</div>
+        Rules &amp; Regulations
+      </div>
+      <div class="card-body p-0">
+        <div class="scroll-area p-3" style="max-height:480px;">
+
+          <div class="text-center mb-3 pb-2" style="border-bottom:1px solid #e5e7eb;">
+            <p class="fw-bold mb-0" style="color:#144c94; font-size:0.95rem;">University of Cebu</p>
+            <p class="text-muted mb-0" style="font-size:0.78rem; font-weight:600;">
+              COLLEGE OF INFORMATION &amp; COMPUTER STUDIES
             </p>
           </div>
 
-          <hr>
+          <p class="fw-bold mb-2" style="font-size:0.82rem; color:#374151; text-transform:uppercase; letter-spacing:0.5px;">
+            Laboratory Rules
+          </p>
 
-        </div>
-      </div>
-    </div>
-
-    <!-- Rules and Regulations -->
-    <div class="card">
-      <div class="card-header text-white" style="background-color:#144c94">
-        Rules and Regulation
-      </div>
-
-      <div class="card-body container-fluid" style="width:32rem; height:25rem;">
-        <div style="overflow-y:auto; max-height:440px;">
-
-          <h5 class="text-center"><strong>University of Cebu</strong></h5>
-          <p class="text-center"><strong>COLLEGE OF INFORMATION & COMPUTER STUDIES</strong></p>
-
-          <p><strong>LABORATORY RULES AND REGULATIONS</strong></p>
-
-          <p>Maintain silence and discipline inside the laboratory.</p>
-          <p>Games are not allowed inside the lab.</p>
-          <p>Internet use requires instructor permission.</p>
-          <p>Downloading or installing software is prohibited.</p>
-          <p>Deleting files or changing computer setup is a major offense.</p>
-
-          <p><strong>DISCIPLINARY ACTION</strong></p>
-          <ul>
-            <li>First Offense - Suspension recommendation.</li>
-            <li>Second Offense - Heavier sanction.</li>
+          <ul class="list-unstyled mb-3" style="font-size:0.82rem;">
+            <li class="d-flex gap-2 mb-2 p-2 rounded-2" style="background:#f8faff;">
+              <span style="color:#144c94; flex-shrink:0;">&#10004;</span>
+              Maintain silence and discipline inside the laboratory.
+            </li>
+            <li class="d-flex gap-2 mb-2 p-2 rounded-2" style="background:#f8faff;">
+              <span style="color:#144c94; flex-shrink:0;">&#10004;</span>
+              Games are not allowed inside the lab.
+            </li>
+            <li class="d-flex gap-2 mb-2 p-2 rounded-2" style="background:#f8faff;">
+              <span style="color:#144c94; flex-shrink:0;">&#10004;</span>
+              Internet use requires instructor permission.
+            </li>
+            <li class="d-flex gap-2 mb-2 p-2 rounded-2" style="background:#f8faff;">
+              <span style="color:#144c94; flex-shrink:0;">&#10004;</span>
+              Downloading or installing software is prohibited.
+            </li>
+            <li class="d-flex gap-2 mb-2 p-2 rounded-2" style="background:#f8faff;">
+              <span style="color:#144c94; flex-shrink:0;">&#10004;</span>
+              Deleting files or changing computer setup is a major offense.
+            </li>
           </ul>
 
+          <p class="fw-bold mb-2" style="font-size:0.82rem; color:#dc2626; text-transform:uppercase; letter-spacing:0.5px;">
+            &#9888; Disciplinary Actions
+          </p>
+
+          <div class="d-flex flex-column gap-2" style="font-size:0.82rem;">
+            <div class="p-2 rounded-2 d-flex gap-2 align-items-start"
+                 style="background:#fff3f3; border-left:3px solid #f87171;">
+              <span class="badge rounded-pill"
+                    style="background:#f87171; font-size:0.65rem; white-space:nowrap; margin-top:2px;">1st</span>
+              Suspension recommendation.
+            </div>
+            <div class="p-2 rounded-2 d-flex gap-2 align-items-start"
+                 style="background:#fff3f3; border-left:3px solid #dc2626;">
+              <span class="badge rounded-pill"
+                    style="background:#dc2626; font-size:0.65rem; white-space:nowrap; margin-top:2px;">2nd</span>
+              Heavier sanction imposed.
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
-
   </div>
-</div>
-</body>
-</html>
+
+</div><!-- /row -->
 
 {% endblock %}

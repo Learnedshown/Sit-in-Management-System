@@ -79,6 +79,7 @@ def setup_database(app):
             login_time TEXT,
             logout_time TEXT,
             session_date TEXT NOT NULL,
+            purpose TEXT,
             pc_number TEXT,
             lab_room TEXT,       
             FOREIGN KEY(student_id) REFERENCES students(id)
@@ -86,6 +87,15 @@ def setup_database(app):
 
 
 
+        """)
+
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS announcements(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            content TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP     
+        )
+        
         """)
         db.commit()
         seed_admin_data(db)

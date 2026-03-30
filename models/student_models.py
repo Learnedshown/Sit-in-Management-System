@@ -46,6 +46,14 @@ def update_student(data):
                   ),
                       commit=True
             )
+   
+def change_student_password(data):
+   view_students(data["id_number"])
+
+   hash_pw = generate_password_hash(data["password"])
+
+   query = """ UPDATE students SET password = ? WHERE id_number = ? """
+   execute(query, (hash_pw, data["id_number"]), commit=True)
 
 
 def student_session(data):

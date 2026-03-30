@@ -1,11 +1,11 @@
-{% extends "admin_base.html" %}
+{% extends "admin/admin_base.html" %}
 
 {% block content %}
 
 <h2 class="text-center mb-4">Sit-in Records</h2>
 
 <table id="recordsTable" class="table table-bordered table-striped">
-    <thead class="table-dark">
+    <thead class="table-primary">
         <tr>
             <th>ID Number</th>
             <th>Name</th>
@@ -14,7 +14,7 @@
             <th>Logout</th>
             <th>PC</th>
             <th>Lab</th>
-            <th>Action</th> <!-- ✅ NEW -->
+       
         </tr>
     </thead>
     <tbody>
@@ -27,19 +27,6 @@
             <td>{{ r.logout_time or "Active" }}</td>
             <td>{{ r.pc_number }}</td>
             <td>{{ r.lab_room }}</td>
-
-            <!-- ✅ ACTION COLUMN -->
-            <td>
-                {% if not r.logout_time %}
-                <form method="POST" action="/admin/sitin/end/{{ r.session_id }}">
-                    <button class="btn btn-danger btn-sm">
-                        End
-                    </button>
-                </form>
-                {% else %}
-                <span class="text-success">Done</span>
-                {% endif %}
-            </td>
 
         </tr>
         {% endfor %}

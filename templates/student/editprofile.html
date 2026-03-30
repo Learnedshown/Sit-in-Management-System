@@ -1,82 +1,244 @@
-{% extends "student/dashboard.html" %}
+{% extends "student/dashboardbase.html" %}
 
-{% block title %} Edit Profile {% endblock %}
+{% block title %}Edit Profile{% endblock %}
 
 {% block content %}
-<div class="d-flex flex-column justify-content-center align-items-center" style="min-height: 80vh;">
-  {% with messages = get_flashed_messages() %}
-    {% if messages %}
-      <div class="alert alert-warning">
-        {% for message in messages %}
-          <div>{{ message }}</div>
-        {% endfor %}
-      </div>
-    {% endif %}
-  {% endwith %}
 
-  <div class="card p-4 shadow" style="width: 100%; max-width: 600px;">
-    <form method="POST" action="{{ url_for('edit_profile') }}" enctype="multipart/form-data">
-
-      <h3 class="text-center mb-4 fw-bold navbar-dark">Edit Profile</h3>
-
-      <!-- Profile Photo Preview -->
-      <div class="text-center mb-3">
-        {% if profile_photo %}
-          <img src="{{ url_for('static', filename='uploads/' ~ profile_photo) }}" alt="Profile Photo" class="rounded-circle mb-2" style="width:120px; height:120px; object-fit:cover;">
-        {% else %}
-          <img src="{{ url_for('static', filename='uploads/default.png') }}" alt="Profile Photo" class="rounded-circle mb-2" style="width:120px; height:120px; object-fit:cover;">
-        {% endif %}
-        <input type="file" class="form-control mt-2" name="profile_photo" accept="image/*">
-      </div>
-
-      <div class="row">
-        <div class="col-12 col-md-6 mb-3">
-          <input type="text" class="form-control" name="first_name" placeholder="First Name" maxlength="30" value="{{ first_name|default('') }}" required>
-        </div>
-        <div class="col-12 col-md-6 mb-3">
-          <input type="text" class="form-control" name="last_name" placeholder="Last Name" maxlength="30" value="{{ last_name|default('') }}" required>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="col-12 col-md-6 mb-3">
-          <input type="text" class="form-control" name="middle_name" placeholder="Middle Name" maxlength="30" value="{{ middle_name|default('') }}">
-        </div>
-        <div class="col-12 col-md-6 mb-3">
-          <select class="form-select" name="course_level" required>
-            <option value="" disabled {% if not course_level %}selected{% endif %}>Select Level</option>
-            <option value="1" {% if course_level == 1 %}selected{% endif %}>1</option>
-            <option value="2" {% if course_level == 2 %}selected{% endif %}>2</option>
-            <option value="3" {% if course_level == 3 %}selected{% endif %}>3</option>
-            <option value="4" {% if course_level == 4 %}selected{% endif %}>4</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="col-12 col-md-6 mb-3">
-          <input type="email" class="form-control" name="email" placeholder="Email" value="{{ email|default('') }}" required>
-        </div>
-        <div class="col-12 col-md-6 mb-3">
-          <select class="form-select" name="course" required>
-            <option value="" disabled {% if not course %}selected{% endif %}>Select Course</option>
-            <option value="BSIT" {% if course == "BSIT" %}selected{% endif %}>BSIT</option>
-            <option value="BSCS" {% if course == "BSCS" %}selected{% endif %}>BSCS</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="mb-3">
-        <input type="text" class="form-control" name="address" placeholder="Address" value="{{ address|default('') }}" required>
-      </div>
-
-      <button type="submit" class="btn btn-primary w-100 mb-2">Update Profile</button>
-
-      <p class="text-center mb-0">
-        <a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
-      </p>
-
-    </form>
+<!-- Page Header -->
+<div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+  <div>
+    <h4>&#9998; Edit Profile</h4>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="/dashboard" class="text-decoration-none">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Edit Profile</li>
+      </ol>
+    </nav>
   </div>
 </div>
+
+<!-- Flash messages -->
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-warning alert-dismissible fade show rounded-3 mb-3" role="alert">
+        &#9888; {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<div class="row g-4 justify-content-center">
+  <div class="col-12 col-xl-8">
+
+    <form method="POST" action="{{ url_for('edit_profile') }}" enctype="multipart/form-data" id="editProfileForm">
+
+      <!-- ── Profile Photo Card ── -->
+      <div class="dash-card card mb-4">
+        <div class="card-header-custom">
+          <div class="header-icon">&#128247;</div>
+          Profile Photo
+        </div>
+        <div class="card-body text-center py-4">
+
+          <div class="position-relative d-inline-block mb-3">
+            <img id="photoPreview"
+                 class="rounded-circle border border-3"
+                 style="width:110px; height:110px; object-fit:cover; border-color:#144c94 !important; cursor:pointer;"
+                 src="{% if profile_photo %}{{ url_for('static', filename='uploads/' ~ profile_photo) }}{% else %}{{ url_for('static', filename='uploads/default.png') }}{% endif %}"
+                 alt="Profile Photo"
+                 title="Click to change photo"
+                 onclick="document.getElementById('photoInput').click()">
+
+            <div class="position-absolute bottom-0 end-0 rounded-circle d-flex align-items-center justify-content-center"
+                 style="width:30px;height:30px;background:#144c94;color:#fff;font-size:0.75rem;cursor:pointer;"
+                 onclick="document.getElementById('photoInput').click()">
+              &#9998;
+            </div>
+          </div>
+
+          <p class="text-muted small mb-2">Click the photo to upload a new one</p>
+
+          <input type="file" id="photoInput" class="d-none" name="profile_photo" accept="image/*">
+
+          <div id="photoFileName" class="text-muted small"></div>
+
+        </div>
+      </div>
+
+      <!-- ── Personal Information Card ── -->
+      <div class="dash-card card mb-4">
+        <div class="card-header-custom">
+          <div class="header-icon">&#128100;</div>
+          Personal Information
+        </div>
+        <div class="card-body py-4">
+
+          <div class="row g-3">
+            <div class="col-12 col-md-4">
+              <label class="form-label small fw-semibold text-muted mb-1">First Name</label>
+              <input type="text" class="form-control"
+                     name="first_name" placeholder="First Name"
+                     maxlength="30" value="{{ first_name|default('') }}" required>
+            </div>
+            <div class="col-12 col-md-4">
+              <label class="form-label small fw-semibold text-muted mb-1">Middle Name</label>
+              <input type="text" class="form-control"
+                     name="middle_name" placeholder="Middle Name (optional)"
+                     maxlength="30" value="{{ middle_name|default('') }}">
+            </div>
+            <div class="col-12 col-md-4">
+              <label class="form-label small fw-semibold text-muted mb-1">Last Name</label>
+              <input type="text" class="form-control"
+                     name="last_name" placeholder="Last Name"
+                     maxlength="30" value="{{ last_name|default('') }}" required>
+            </div>
+          </div>
+
+          <div class="row g-3 mt-1">
+            <div class="col-12 col-md-6">
+              <label class="form-label small fw-semibold text-muted mb-1">Email Address</label>
+              <input type="email" class="form-control"
+                     name="email" placeholder="Email"
+                     value="{{ email|default('') }}" required>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label small fw-semibold text-muted mb-1">Address</label>
+              <input type="text" class="form-control"
+                     name="address" placeholder="Home address"
+                     value="{{ address|default('') }}" required>
+            </div>
+          </div>
+
+          <div class="row g-3 mt-1">
+            <div class="col-12 col-md-6">
+              <label class="form-label small fw-semibold text-muted mb-1">Course</label>
+              <select class="form-select" name="course" required>
+                <option value="" disabled {% if not course %}selected{% endif %}>Select Course</option>
+                <option value="BSIT" {% if course == "BSIT" %}selected{% endif %}>BSIT</option>
+                <option value="BSCS" {% if course == "BSCS" %}selected{% endif %}>BSCS</option>
+              </select>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label small fw-semibold text-muted mb-1">Year Level</label>
+              <select class="form-select" name="course_level" required>
+                <option value="" disabled {% if not course_level %}selected{% endif %}>Select Year Level</option>
+                <option value="1" {% if course_level == 1 %}selected{% endif %}>1st Year</option>
+                <option value="2" {% if course_level == 2 %}selected{% endif %}>2nd Year</option>
+                <option value="3" {% if course_level == 3 %}selected{% endif %}>3rd Year</option>
+                <option value="4" {% if course_level == 4 %}selected{% endif %}>4th Year</option>
+              </select>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── Change Password Card ── -->
+      <div class="dash-card card mb-4">
+        <div class="card-header-custom" id="passwordToggle" style="cursor:pointer;"
+             onclick="togglePasswordSection()">
+          <div class="header-icon">&#128274;</div>
+          Change Password
+          <span class="ms-auto" id="passwordToggleIcon" style="font-size:0.8rem; opacity:0.8;">&#9660; Optional</span>
+        </div>
+
+        <div id="passwordSection" class="card-body py-4" style="display:none;">
+
+          <div class="alert alert-info rounded-3 py-2 px-3 mb-3 small" role="alert">
+            &#8505; Leave these fields empty if you don't want to change your password.
+          </div>
+
+          <div class="row g-3">
+            <div class="col-12 col-md-4">
+              <label class="form-label small fw-semibold text-muted mb-1">Current Password</label>
+              <input type="password" class="form-control"
+                     name="current_password" placeholder="Current password">
+            </div>
+            <div class="col-12 col-md-4">
+              <label class="form-label small fw-semibold text-muted mb-1">New Password</label>
+              <input type="password" class="form-control" id="newPassword"
+                     name="password" placeholder="New password">
+            </div>
+            <div class="col-12 col-md-4">
+              <label class="form-label small fw-semibold text-muted mb-1">Confirm Password</label>
+              <input type="password" class="form-control" id="confirmPassword"
+                     name="confirm_password" placeholder="Re-enter new password"
+                     oninput="checkPasswordMatch()">
+              <div id="passwordMatchMsg" class="small mt-1" style="display:none;"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── Actions ── -->
+      <div class="d-flex gap-2 justify-content-end">
+        <a href="{{ url_for('dashboard') }}"
+           class="btn btn-outline-secondary rounded-3 px-4">
+          &#8592; Cancel
+        </a>
+        <button type="submit" class="btn rounded-3 px-5 fw-semibold"
+                style="background:#144c94; color:#fff;">
+          &#10003; Save Changes
+        </button>
+      </div>
+
+    </form>
+
+  </div>
+</div>
+
+<!-- Vanilla JS -->
+<script>
+  // Photo preview
+  document.getElementById('photoInput').addEventListener('change', function () {
+    const file = this.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      document.getElementById('photoPreview').src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+
+    document.getElementById('photoFileName').textContent = 'Selected: ' + file.name;
+  });
+
+  // Toggle password section
+  function togglePasswordSection() {
+    const section = document.getElementById('passwordSection');
+    const icon = document.getElementById('passwordToggleIcon');
+    if (section.style.display === 'none') {
+      section.style.display = 'block';
+      icon.textContent = '\u25B2 Optional';
+    } else {
+      section.style.display = 'none';
+      icon.textContent = '\u25BC Optional';
+    }
+  }
+
+  // Password match indicator
+  function checkPasswordMatch() {
+    const newPw = document.getElementById('newPassword').value;
+    const confirmPw = document.getElementById('confirmPassword').value;
+    const msg = document.getElementById('passwordMatchMsg');
+
+    if (!confirmPw) {
+      msg.style.display = 'none';
+      return;
+    }
+
+    msg.style.display = 'block';
+    if (newPw === confirmPw) {
+      msg.style.color = '#16a34a';
+      msg.textContent = '\u2713 Passwords match';
+    } else {
+      msg.style.color = '#dc2626';
+      msg.textContent = '\u2717 Passwords do not match';
+    }
+  }
+</script>
+
 {% endblock %}
