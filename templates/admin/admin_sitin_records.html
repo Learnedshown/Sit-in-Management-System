@@ -1,51 +1,301 @@
 {% extends "admin/admin_base.html" %}
 
+{% block title %}Sit-in Records{% endblock %}
+
 {% block content %}
 
-<h2 class="text-center mb-4">Sit-in Records</h2>
+<!-- Page Header -->
+<div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+  <div>
+    <h4>&#128196; Sit-in Records</h4>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="/admin/dashboard" class="text-decoration-none">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Sit-in Records</li>
+      </ol>
+    </nav>
+  </div>
 
-<table id="recordsTable" class="table table-bordered table-striped">
-    <thead class="table-primary">
-        <tr>
-            <th>ID Number</th>
-            <th>Name</th>
-            <th>Date</th>
-            <th>Login</th>
-            <th>Logout</th>
-            <th>PC</th>
-            <th>Lab</th>
-       
-        </tr>
-    </thead>
-    <tbody>
-        {% for r in records %}
-        <tr>
-            <td>{{ r.id_number }}</td>
-            <td>{{ r.first_name }} {{ r.last_name }}</td>
-            <td>{{ r.session_date }}</td>
-            <td>{{ r.login_time }}</td>
-            <td>{{ r.logout_time or "Active" }}</td>
-            <td>{{ r.pc_number }}</td>
-            <td>{{ r.lab_room }}</td>
+  <!-- THIS IS export_records -->
+  <a href="{{ url_for('admin_sitin_records') }}"
+     class="btn btn-sm rounded-3 fw-semibold px-4"
+     style="background:#fff; color:#144c94; border:1px solid #144c94; font-size:0.8rem;">
+    &#11015; Export CSV
+  </a>
+</div>
 
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<!-- Table Card -->
+<div class="dash-card card">
+  <div class="card-header-custom d-flex align-items-center justify-content-between">
+    <div class="d-flex align-items-center gap-2">
+      <div class="header-icon">&#128203;</div>
+      All Records
+    </div>
+    <span id="recordCount" class="badge rounded-pill"
+          style="background:rgba(255,255,255,0.2); font-size:0.75rem; font-weight:600;">
+      {{ records|length }} records
+    </span>
+  </div>
 
-<!-- jQuery -->
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <div class="card-body p-0">
 
-<!-- DataTables -->
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <!-- Toolbar -->
+    <div class="px-4 py-3 border-bottom d-flex align-items-center justify-content-between flex-wrap gap-2"
+         style="background:#f8faff;">
+
+      <div class="d-flex align-items-center gap-2">
+        <span style="color:#6b7280; font-size:0.875rem;">&#128269;</span>
+        <input type="text" id="tableSearch"
+               class="form-control form-control-sm border-0 shadow-none"
+               placeholder="Search by name, ID, lab, date…"
+               style="background:transparent; font-size:0.875rem; max-width:300px;"
+               oninput="applyFilters()">
+      </div>
+
+      <div class="d-flex align-items-center gap-2">
+        <label class="text-muted mb-0" style="font-size:0.78rem; white-space:nowrap;">Rows per page</label>
+        <select id="pageSizeSelect" class="form-select form-select-sm"
+                style="width:70px; font-size:0.8rem;" onchange="applyFilters()">
+          <option value="10" selected>10</option>
+          <option value="25">25</option>
+          <option value="50">50</option>
+          <option value="100">100</option>
+        </select>
+      </div>
+
+    </div>
+
+    <div class="table-responsive">
+      <table class="table mb-0" style="font-size:0.875rem;">
+        <thead style="background:#f0f4f8;">
+          <tr>
+            <th class="px-4 py-3 border-0 text-muted fw-semibold sortable"
+                style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.5px; cursor:pointer; white-space:nowrap;"
+                onclick="sortBy(0)">ID Number <span class="sort-icon">&#8597;</span></th>
+            <th class="py-3 border-0 text-muted fw-semibold sortable"
+                style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.5px; cursor:pointer;"
+                onclick="sortBy(1)">Name <span class="sort-icon">&#8597;</span></th>
+            <th class="py-3 border-0 text-muted fw-semibold sortable"
+                style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.5px; cursor:pointer;"
+                onclick="sortBy(2)">Date <span class="sort-icon">&#8597;</span></th>
+            <th class="py-3 border-0 text-muted fw-semibold"
+                style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.5px;">Login</th>
+            <th class="py-3 border-0 text-muted fw-semibold"
+                style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.5px;">Logout</th>
+            <th class="py-3 border-0 text-muted fw-semibold"
+                style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.5px;">PC</th>
+            <th class="py-3 pe-4 border-0 text-muted fw-semibold sortable"
+                style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.5px; cursor:pointer;"
+                onclick="sortBy(6)">Lab <span class="sort-icon">&#8597;</span></th>
+          </tr>
+        </thead>
+        <tbody id="recordsTableBody"></tbody>
+      </table>
+    </div>
+
+    <!-- Empty / no results -->
+    <div id="emptyState" class="text-center py-5 text-muted" style="display:none;">
+      <div style="font-size:2.5rem; margin-bottom:8px;">&#128196;</div>
+      <p class="fw-semibold mb-1" style="color:#374151;">No records found</p>
+      <p class="small mb-0">Try adjusting your search.</p>
+    </div>
+
+    <!-- Pagination -->
+    <div class="px-4 py-3 border-top d-flex align-items-center justify-content-between flex-wrap gap-2"
+         style="background:#f8faff;">
+      <p id="paginationInfo" class="mb-0 text-muted" style="font-size:0.8rem;"></p>
+      <nav>
+        <ul class="pagination pagination-sm mb-0 gap-1" id="paginationList"></ul>
+      </nav>
+    </div>
+
+  </div>
+</div>
+
 
 <script>
-$(document).ready(function () {
-    $('#recordsTable').DataTable({
-        pageLength: 10
-    });
+// ── Raw data from Jinja ──
+var RAW_RECORDS = [
+  {% for r in records %}
+  {
+    id_number:    {{ r.id_number | tojson }},
+    name:         {{ (r.first_name ~ ' ' ~ r.last_name) | tojson }},
+    session_date: {{ r.session_date | string | tojson }},
+    login_time:   {{ r.login_time | string | tojson }},
+    logout_time:  {{ (r.logout_time | string if r.logout_time else '') | tojson }},
+    pc_number:    {{ r.pc_number | tojson }},
+    lab_room:     {{ r.lab_room | tojson }}
+  }{% if not loop.last %},{% endif %}
+  {% endfor %}
+];
+
+var filtered    = RAW_RECORDS.slice();
+var currentPage = 1;
+var sortCol     = 2;   // default: date
+var sortAsc     = false;
+
+// ── Render ──
+function render() {
+  var pageSize = parseInt(document.getElementById("pageSizeSelect").value, 10);
+  var total    = filtered.length;
+  var pages    = Math.max(1, Math.ceil(total / pageSize));
+
+  if (currentPage > pages) currentPage = pages;
+
+  var start = (currentPage - 1) * pageSize;
+  var slice = filtered.slice(start, start + pageSize);
+
+  var html = "";
+  slice.forEach(function (r) {
+    var isActive  = r.logout_time === "" || r.logout_time === "None";
+    var logoutCell = isActive
+      ? '<span class="d-flex align-items-center gap-1" style="color:#065f46;font-size:0.82rem;font-weight:600;">' +
+          '<span style="width:7px;height:7px;background:#10b981;border-radius:50%;display:inline-block;"></span>Active' +
+        '</span>'
+      : '<span style="color:#6b7280;">' + esc(r.logout_time) + '</span>';
+
+    html +=
+      '<tr class="record-row border-bottom" style="transition:background .15s;">' +
+        '<td class="px-4 py-3 align-middle">' +
+          '<code style="background:#f0f4f8;padding:2px 8px;border-radius:5px;font-size:0.82rem;color:#374151;">' +
+            esc(r.id_number) +
+          '</code>' +
+        '</td>' +
+        '<td class="py-3 align-middle fw-semibold" style="color:#111827;">' + esc(r.name) + '</td>' +
+        '<td class="py-3 align-middle" style="color:#6b7280;">' + esc(r.session_date) + '</td>' +
+        '<td class="py-3 align-middle" style="color:#374151;">' + esc(r.login_time) + '</td>' +
+        '<td class="py-3 align-middle">' + logoutCell + '</td>' +
+        '<td class="py-3 align-middle">' +
+          '<span class="badge rounded-pill px-2 py-1" style="background:#f3f4f6;color:#374151;font-size:0.75rem;font-weight:600;">' +
+            esc(r.pc_number) +
+          '</span>' +
+        '</td>' +
+        '<td class="py-3 pe-4 align-middle">' +
+          '<span class="badge rounded-pill px-2 py-1" style="background:#eef3fc;color:#144c94;font-size:0.75rem;font-weight:600;">' +
+            'Room ' + esc(r.lab_room) +
+          '</span>' +
+        '</td>' +
+      '</tr>';
+  });
+
+  var tbody = document.getElementById("recordsTableBody");
+  tbody.innerHTML = html || "";
+
+  document.getElementById("emptyState").style.display = total === 0 ? "block" : "none";
+
+  // Info text
+  var from = total === 0 ? 0 : start + 1;
+  var to   = Math.min(start + pageSize, total);
+  document.getElementById("paginationInfo").textContent =
+    "Showing " + from + " – " + to + " of " + total + " records";
+
+  document.getElementById("recordCount").textContent = total + " records";
+
+  // Pagination buttons
+  buildPagination(pages);
+
+  // Hover
+  document.querySelectorAll(".record-row").forEach(function (row) {
+    row.addEventListener("mouseenter", function () { this.style.background = "#f8faff"; });
+    row.addEventListener("mouseleave", function () { this.style.background = ""; });
+  });
+}
+
+// ── Pagination buttons ──
+function buildPagination(pages) {
+  var list = document.getElementById("paginationList");
+  var html = "";
+  var maxVisible = 5;
+
+  var prev = '<li class="page-item ' + (currentPage === 1 ? "disabled" : "") + '">' +
+    '<a class="page-link rounded-3" href="#" onclick="goPage(' + (currentPage - 1) + ');return false;"' +
+    ' style="font-size:0.78rem;border-color:#e5e7eb;">&#8592;</a></li>';
+
+  var next = '<li class="page-item ' + (currentPage === pages ? "disabled" : "") + '">' +
+    '<a class="page-link rounded-3" href="#" onclick="goPage(' + (currentPage + 1) + ');return false;"' +
+    ' style="font-size:0.78rem;border-color:#e5e7eb;">&#8594;</a></li>';
+
+  var start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+  var end   = Math.min(pages, start + maxVisible - 1);
+  if (end - start < maxVisible - 1) start = Math.max(1, end - maxVisible + 1);
+
+  html += prev;
+  for (var p = start; p <= end; p++) {
+    var active = p === currentPage;
+    html += '<li class="page-item ' + (active ? "active" : "") + '">' +
+      '<a class="page-link rounded-3" href="#" onclick="goPage(' + p + ');return false;"' +
+      ' style="font-size:0.78rem;' + (active ? 'background:#144c94;border-color:#144c94;' : 'border-color:#e5e7eb;') + '">' +
+      p + '</a></li>';
+  }
+  html += next;
+
+  list.innerHTML = html;
+}
+
+function goPage(p) {
+  var pageSize = parseInt(document.getElementById("pageSizeSelect").value, 10);
+  var pages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  if (p < 1 || p > pages) return;
+  currentPage = p;
+  render();
+}
+
+// ── Sort ──
+var sortDirs = {};
+function sortBy(col) {
+  sortDirs[col] = !sortDirs[col];
+  var asc = sortDirs[col];
+
+  filtered.sort(function (a, b) {
+    var keys = ["id_number","name","session_date","login_time","logout_time","pc_number","lab_room"];
+    var va = String(a[keys[col]] || "").toLowerCase();
+    var vb = String(b[keys[col]] || "").toLowerCase();
+    if (va < vb) return asc ? -1 : 1;
+    if (va > vb) return asc ? 1 : -1;
+    return 0;
+  });
+
+  currentPage = 1;
+  render();
+}
+
+// ── Filter ──
+function applyFilters() {
+  var q = document.getElementById("tableSearch").value.toLowerCase().trim();
+
+  filtered = RAW_RECORDS.filter(function (r) {
+    if (!q) return true;
+    return (
+      String(r.id_number).toLowerCase().indexOf(q) !== -1 ||
+      r.name.toLowerCase().indexOf(q) !== -1 ||
+      String(r.session_date).toLowerCase().indexOf(q) !== -1 ||
+      String(r.lab_room).toLowerCase().indexOf(q) !== -1 ||
+      String(r.pc_number).toLowerCase().indexOf(q) !== -1
+    );
+  });
+
+  currentPage = 1;
+  render();
+}
+
+// ── HTML escape ──
+function esc(str) {
+  return String(str || "")
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+// ── Init ──
+// Default sort: newest date first
+filtered.sort(function (a, b) {
+  var va = String(a.session_date).toLowerCase();
+  var vb = String(b.session_date).toLowerCase();
+  if (va < vb) return 1;
+  if (va > vb) return -1;
+  return 0;
 });
+
+render();
 </script>
 
 {% endblock %}

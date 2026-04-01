@@ -1,45 +1,469 @@
 {% extends "admin/admin_base.html" %}
 
+{% block title %}Student List{% endblock %}
+
 {% block content %}
 
-<h2>Student List</h2>
+<!-- Page Header -->
+<div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+  <div>
+    <h4>&#128100; Student List</h4>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="/admin/dashboard" class="text-decoration-none">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Students</li>
+      </ol>
+    </nav>
+  </div>
 
-<table class="table table-bordered table-hover">
-    <thead class="table-primary">
-        <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Course</th>
-            <th>Year</th>
-            <th>Sessions</th>
-        </tr>
-    </thead>
-    <tbody id="studentsTable"></tbody>
-</table>
+  <div class="d-flex gap-2 flex-wrap">
+    <button class="btn btn-sm rounded-3 fw-semibold px-3"
+            style="background:#fff3f3; color:#dc2626; border:1px solid #fca5a5; font-size:0.8rem;"
+            data-bs-toggle="modal" data-bs-target="#resetModal">
+      &#8635; Reset All Sessions
+    </button>
+    <button class="btn btn-sm rounded-3 fw-semibold px-4"
+            style="background:#144c94; color:#fff; font-size:0.8rem;"
+            data-bs-toggle="modal" data-bs-target="#addStudentModal">
+      &#43; Add Student
+    </button>
+  </div>
+</div>
+
+<!-- Table Card -->
+<div class="dash-card card">
+  <div class="card-header-custom d-flex align-items-center justify-content-between">
+    <div class="d-flex align-items-center gap-2">
+      <div class="header-icon">&#128203;</div>
+      Registered Students
+    </div>
+    <span id="studentCount" class="badge rounded-pill"
+          style="background:rgba(255,255,255,0.2); font-size:0.75rem; font-weight:600;">
+      Loading…
+    </span>
+  </div>
+
+  <div class="card-body p-0">
+
+    <!-- Filter bar -->
+    <div class="px-4 py-3 border-bottom d-flex align-items-center gap-2" style="background:#f8faff;">
+      <span style="color:#6b7280; font-size:0.875rem;">&#128269;</span>
+      <input type="text" id="tableSearch" class="form-control form-control-sm border-0 shadow-none"
+             placeholder="Filter by name, ID, course…"
+             style="background:transparent; font-size:0.875rem; max-width:320px;"
+             oninput="filterTable()">
+    </div>
+
+    <div class="table-responsive">
+      <table class="table mb-0" style="font-size:0.875rem;">
+        <thead style="background:#f0f4f8;">
+          <tr>
+            <th class="px-4 py-3 border-0 text-muted fw-semibold"
+                style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.5px;">ID Number</th>
+            <th class="py-3 border-0 text-muted fw-semibold"
+                style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.5px;">Name</th>
+            <th class="py-3 border-0 text-muted fw-semibold"
+                style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.5px;">Course</th>
+            <th class="py-3 border-0 text-muted fw-semibold"
+                style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.5px;">Year</th>
+            <th class="py-3 border-0 text-muted fw-semibold"
+                style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.5px;">Sessions</th>
+            <th class="py-3 pe-4 border-0 text-muted fw-semibold"
+                style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.5px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="studentsTable">
+          <tr id="loadingRow">
+            <td colspan="6" class="text-center py-5 text-muted">
+              <div class="spinner-border spinner-border-sm me-2" role="status"
+                   style="color:#144c94;"></div>
+              Loading students…
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div id="noResults" class="text-center py-5 text-muted" style="display:none;">
+      <div style="font-size:2rem; margin-bottom:6px;">&#128269;</div>
+      <p class="mb-0 small">No matching students found.</p>
+    </div>
+
+    <div id="emptyState" class="text-center py-5 text-muted" style="display:none;">
+      <div style="font-size:3rem; margin-bottom:10px;">&#128100;</div>
+      <p class="fw-semibold mb-1" style="color:#374151;">No students registered yet</p>
+      <p class="small mb-3">Add the first student using the button above.</p>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══ ADD STUDENT MODAL ══ -->
+<div class="modal fade" id="addStudentModal" tabindex="-1" aria-labelledby="addStudentLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addStudentLabel">&#43; Add Student</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="{{ url_for('add_student') }}" enctype="multipart/form-data">
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-12 col-md-4">
+              <label class="form-label-sm">First Name</label>
+              <input type="text" class="form-control" name="first_name" placeholder="First Name" required maxlength="30">
+            </div>
+            <div class="col-12 col-md-4">
+              <label class="form-label-sm">Middle Name</label>
+              <input type="text" class="form-control" name="middle_name" placeholder="Middle Name" maxlength="30">
+            </div>
+            <div class="col-12 col-md-4">
+              <label class="form-label-sm">Last Name</label>
+              <input type="text" class="form-control" name="last_name" placeholder="Last Name" required maxlength="30">
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label-sm">ID Number</label>
+              <input type="text" class="form-control" name="id_number" placeholder="e.g. 20230001" maxlength="8" required>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label-sm">Email</label>
+              <input type="email" class="form-control" name="email" placeholder="student@uc.edu.ph" required>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label-sm">Course</label>
+              <select class="form-select" name="course" required>
+                <option value="" disabled selected>Select Course</option>
+                <option value="BSIT">BSIT</option>
+                <option value="BSCS">BSCS</option>
+              </select>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label-sm">Year Level</label>
+              <select class="form-select" name="course_level" required>
+                <option value="" disabled selected>Select Year</option>
+                <option value="1">1st Year</option>
+                <option value="2">2nd Year</option>
+                <option value="3">3rd Year</option>
+                <option value="4">4th Year</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label-sm">Address</label>
+              <input type="text" class="form-control" name="address" placeholder="Home address" required>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label-sm">Password</label>
+              <input type="password" class="form-control" name="password" placeholder="Set initial password" required>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label-sm">Sessions</label>
+              <input type="number" class="form-control" name="sessions_remaining" placeholder="e.g. 30" min="0" required>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-0 pt-0 px-4 pb-4">
+          <button type="button" class="btn btn-outline-secondary rounded-3 px-4"
+                  data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn rounded-3 px-4 fw-semibold"
+                  style="background:#144c94; color:#fff;">
+            &#10003; Add Student
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══ EDIT STUDENT MODAL ══ -->
+<div class="modal fade" id="editStudentModal" tabindex="-1" aria-labelledby="editStudentLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editStudentLabel">&#9998; Edit Student</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" id="editStudentForm">
+        <div class="modal-body">
+          <input type="hidden" value="POST">
+          <div class="row g-3">
+            <div class="col-12 col-md-4">
+              <label class="form-label-sm">First Name</label>
+              <input type="text" class="form-control" id="edit_first_name" name="first_name" required maxlength="30">
+            </div>
+            <div class="col-12 col-md-4">
+              <label class="form-label-sm">Middle Name</label>
+              <input type="text" class="form-control" id="edit_middle_name" name="middle_name" maxlength="30">
+            </div>
+            <div class="col-12 col-md-4">
+              <label class="form-label-sm">Last Name</label>
+              <input type="text" class="form-control" id="edit_last_name" name="last_name" required maxlength="30">
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label-sm">Email</label>
+              <input type="email" class="form-control" id="edit_email" name="email" required>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label-sm">Address</label>
+              <input type="text" class="form-control" id="edit_address" name="address" required>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label-sm">Course</label>
+              <select class="form-select" id="edit_course" name="course" required>
+                <option value="BSIT">BSIT</option>
+                <option value="BSCS">BSCS</option>
+              </select>
+            </div>
+            <div class="col-12 col-md-3">
+              <label class="form-label-sm">Year Level</label>
+              <select class="form-select" id="edit_course_level" name="course_level" required>
+                <option value="1">1st Year</option>
+                <option value="2">2nd Year</option>
+                <option value="3">3rd Year</option>
+                <option value="4">4th Year</option>
+              </select>
+            </div>
+            <div class="col-12 col-md-3">
+              <label class="form-label-sm">Sessions Remaining</label>
+              <input type="number" class="form-control" id="edit_sessions" name="sessions_remaining" min="0" max="30" required>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-0 pt-0 px-4 pb-4">
+          <button type="button" class="btn btn-outline-secondary rounded-3 px-4"
+                  data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn rounded-3 px-4 fw-semibold"
+                  style="background:#144c94; color:#fff;">
+            &#10003; Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══ DELETE CONFIRM MODAL ══ -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:400px;">
+    <div class="modal-content">
+      <div class="modal-header" style="background:linear-gradient(135deg,#7f1d1d,#dc2626);">
+        <h5 class="modal-title" id="deleteModalLabel">&#9888; Delete Student</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body text-center py-4">
+        <div style="font-size:2.5rem; margin-bottom:10px;">&#128465;</div>
+        <p class="fw-semibold mb-1" style="color:#111827;">Are you sure?</p>
+        <p class="small text-muted mb-0">
+          You are about to delete <strong id="deleteStudentName"></strong>.
+          This action cannot be undone.
+        </p>
+      </div>
+      <div class="modal-footer border-0 pt-0 px-4 pb-4 justify-content-center gap-2">
+        <button type="button" class="btn btn-outline-secondary rounded-3 px-4"
+                data-bs-dismiss="modal">Cancel</button>
+        <form id="deleteStudentForm" method="POST">
+          <button type="submit" class="btn rounded-3 px-4 fw-semibold"
+                  style="background:#dc2626; color:#fff;">
+            &#128465; Delete
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══ RESET SESSIONS CONFIRM MODAL ══ -->
+<div class="modal fade" id="resetModal" tabindex="-1" aria-labelledby="resetModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:400px;">
+    <div class="modal-content">
+      <div class="modal-header" style="background:linear-gradient(135deg,#7f1d1d,#dc2626);">
+        <h5 class="modal-title" id="resetModalLabel">&#8635; Reset All Sessions</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body text-center py-4">
+        <div style="font-size:2.5rem; margin-bottom:10px;">&#9888;</div>
+        <p class="fw-semibold mb-1" style="color:#111827;">Reset sessions for all students?</p>
+        <p class="small text-muted mb-0">
+          This will restore the default session count for every registered student.
+          This action cannot be undone.
+        </p>
+      </div>
+      <div class="modal-footer border-0 pt-0 px-4 pb-4 justify-content-center gap-2">
+        <button type="button" class="btn btn-outline-secondary rounded-3 px-4"
+                data-bs-dismiss="modal">Cancel</button>
+        <form method="POST" action="{{ url_for('reset_sessions') }}">
+          <button type="submit" class="btn rounded-3 px-4 fw-semibold"
+                  style="background:#dc2626; color:#fff;">
+            &#8635; Yes, Reset All
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 <script>
-fetch("/admin/students_data")
-.then(res => res.json())
-.then(data => {
-    if(data.error){
-        document.getElementById("studentsTable").innerHTML = `<tr><td colspan="5">${data.error}</td></tr>`;
-        return;
-    }
+var allStudents = [];
 
-    let rows = "";
-    data.students.forEach(s => {
-        rows += `
-        <tr>
-            <td>${s.id_number}</td>
-            <td>${s.first_name} ${s.last_name}</td>
-            <td>${s.course}</td>
-            <td>${s.course_level}</td>
-            <td>${s.sessions_remaining}</td>
-        </tr>`;
+// ── Load students via fetch ──
+fetch("/admin/students_data")
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+        document.getElementById("loadingRow").remove();
+
+        if (data.error) {
+            document.getElementById("studentsTable").innerHTML =
+                '<tr><td colspan="6" class="text-center py-4 text-danger">' + data.error + '</td></tr>';
+            return;
+        }
+
+        if (!data.students || data.students.length === 0) {
+            document.getElementById("emptyState").style.display = "block";
+            document.getElementById("studentCount").textContent = "0 students";
+            return;
+        }
+
+        allStudents = data.students;
+        document.getElementById("studentCount").textContent = allStudents.length + " students";
+        renderRows(allStudents);
+    })
+    .catch(function () {
+        document.getElementById("loadingRow").innerHTML =
+            '<td colspan="6" class="text-center py-4 text-danger">Failed to load students.</td>';
+    });
+
+function renderRows(students) {
+    var rows = "";
+    students.forEach(function (s) {
+        var sessionColor = s.sessions_remaining <= 5
+            ? "color:#dc2626; font-weight:700;"
+            : s.sessions_remaining <= 15
+                ? "color:#d97706; font-weight:700;"
+                : "color:#065f46; font-weight:700;";
+
+        rows += '<tr class="student-row border-bottom" style="transition:background 0.15s;"' +
+            ' data-id="' + s.id_number + '"' +
+            ' data-first="' + escHtml(s.first_name) + '"' +
+            ' data-middle="' + escHtml(s.middle_name || '') + '"' +
+            ' data-last="' + escHtml(s.last_name) + '"' +
+            ' data-email="' + escHtml(s.email || '') + '"' +
+            ' data-address="' + escHtml(s.address || '') + '"' +
+            ' data-course="' + escHtml(s.course) + '"' +
+            ' data-level="' + s.course_level + '"' +
+            ' data-sessions="' + s.sessions_remaining + '">' +
+
+            '<td class="px-4 py-3 align-middle">' +
+                '<code style="background:#f0f4f8;padding:2px 8px;border-radius:5px;font-size:0.82rem;color:#374151;">' +
+                    escHtml(s.id_number) +
+                '</code>' +
+            '</td>' +
+
+            '<td class="py-3 align-middle fw-semibold" style="color:#111827;">' +
+                escHtml(s.first_name) + ' ' + escHtml(s.last_name) +
+            '</td>' +
+
+            '<td class="py-3 align-middle">' +
+                '<span class="badge rounded-pill px-2 py-1" style="background:#eef3fc;color:#144c94;font-size:0.75rem;font-weight:600;">' +
+                    escHtml(s.course) +
+                '</span>' +
+            '</td>' +
+
+            '<td class="py-3 align-middle">' +
+                '<span class="badge rounded-pill px-2 py-1" style="background:#f3f4f6;color:#374151;font-size:0.75rem;font-weight:600;">' +
+                    'Year ' + s.course_level +
+                '</span>' +
+            '</td>' +
+
+            '<td class="py-3 align-middle">' +
+                '<span style="' + sessionColor + '">' + s.sessions_remaining + '</span>' +
+                '<span class="text-muted" style="font-size:0.75rem;"> sessions</span>' +
+            '</td>' +
+
+            '<td class="py-3 pe-4 align-middle">' +
+                '<div class="d-flex gap-2">' +
+                    '<button class="btn btn-sm rounded-3 fw-semibold px-3"' +
+                        ' style="background:#eef3fc;color:#144c94;border:1px solid #bfdbfe;font-size:0.75rem;"' +
+                        ' onclick="openEdit(this.closest(\'tr\'))">' +
+                        '&#9998; Edit' +
+                    '</button>' +
+                    '<button class="btn btn-sm rounded-3 fw-semibold px-3"' +
+                        ' style="background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;font-size:0.75rem;"' +
+                        ' onclick="openDelete(\'' + escHtml(s.id_number) + '\', \'' + escHtml(s.first_name + ' ' + s.last_name) + '\')">' +
+                        '&#128465; Delete' +
+                    '</button>' +
+                '</div>' +
+            '</td>' +
+
+            '</tr>';
     });
 
     document.getElementById("studentsTable").innerHTML = rows;
-});
+    attachHover();
+}
+
+// ── Hover highlight ──
+function attachHover() {
+    document.querySelectorAll(".student-row").forEach(function (row) {
+        row.addEventListener("mouseenter", function () { this.style.background = "#f8faff"; });
+        row.addEventListener("mouseleave", function () { this.style.background = ""; });
+    });
+}
+
+// ── Live filter ──
+function filterTable() {
+    var query = document.getElementById("tableSearch").value.toLowerCase();
+    var rows = document.querySelectorAll(".student-row");
+    var shown = 0;
+
+    rows.forEach(function (row) {
+        var match = row.textContent.toLowerCase().indexOf(query) !== -1;
+        row.style.display = match ? "" : "none";
+        if (match) shown++;
+    });
+
+    document.getElementById("noResults").style.display = shown === 0 && allStudents.length > 0 ? "block" : "none";
+}
+
+// ── Open edit modal ──
+function openEdit(row) {
+    document.getElementById("edit_first_name").value   = row.dataset.first;
+    document.getElementById("edit_middle_name").value  = row.dataset.middle;
+    document.getElementById("edit_last_name").value    = row.dataset.last;
+    document.getElementById("edit_email").value        = row.dataset.email;
+    document.getElementById("edit_address").value      = row.dataset.address;
+    document.getElementById("edit_course").value       = row.dataset.course;
+    document.getElementById("edit_course_level").value = row.dataset.level;
+    document.getElementById("edit_sessions").value     = row.dataset.sessions;
+
+    document.getElementById("editStudentForm").action =
+        "/admin/students/" + encodeURIComponent(row.dataset.id) + "/edit";
+
+    var modal = new bootstrap.Modal(document.getElementById("editStudentModal"));
+    modal.show();
+}
+
+// ── Open delete modal ──
+function openDelete(idNumber, name) {
+    document.getElementById("deleteStudentName").textContent = name;
+    document.getElementById("deleteStudentForm").action =
+        "/admin/students/" + encodeURIComponent(idNumber) + "/delete";
+
+    var modal = new bootstrap.Modal(document.getElementById("deleteModal"));
+    modal.show();
+}
+
+// ── Escape HTML helper ──
+function escHtml(str) {
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+}
 </script>
 
 {% endblock %}

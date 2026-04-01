@@ -31,7 +31,9 @@ def delete_students(id_number):
    execute(query, (id_number,), commit=True)
 
 def update_student(data):
-   view_students(data["id_number"])
+   student = view_students(data["id_number"])
+   if not student:
+    raise Exception("Student not found")
 
    query = """UPDATE students set first_name = ?, middle_name = ?, last_name = ?, course_level = ?, course = ?, email = ?, address = ?, profile_photo = ? WHERE id_number = ?"""
    execute(query, ( data["first_name"],

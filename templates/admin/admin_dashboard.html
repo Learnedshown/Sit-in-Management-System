@@ -1,67 +1,192 @@
 {% extends "admin/admin_base.html" %}
 
+{% block title %}Admin Dashboard{% endblock %}
+
 {% block content %}
 
-<div class="row">
-    <!-- Statistics Panel -->
-    <div class="col-md-6">
-        <div class="card mb-3">
-            <div class="card-header bg-primary text-white">Statistics</div>
-            <div class="card-body">
-                <p><strong>Students Registered:</strong> {{ total_students }}</p>
-                <p><strong>Currently Sit-in:</strong> {{ current_count }}</p>
-                <p><strong>Total Sit-in:</strong> {{ total_sitin }}</p>
+<!-- Page Header -->
+<div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+  <div>
+    <h4>&#128187; Admin Dashboard</h4>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item active" aria-current="page">Overview</li>
+      </ol>
+    </nav>
+  </div>
 
-                <canvas id="courseChart" width="300" height="300"></canvas>
-            </div>
+  <button class="btn rounded-3 fw-semibold px-4"
+          style="background:#144c94; color:#fff; font-size:0.875rem;"
+          data-bs-toggle="modal" data-bs-target="#searchModal">
+    &#43; New Sit-In
+  </button>
+</div>
+
+<!-- ── Stat Tiles Row ── -->
+<div class="row g-3 mb-4">
+
+  <div class="col-12 col-sm-4">
+    <div class="dash-card card">
+      <div class="card-body p-3">
+        <div class="stat-tile" style="background:#eef3fc;">
+          <div class="stat-icon" style="background:#dbeafe;">&#128100;</div>
+          <div>
+            <div class="stat-value">{{ total_students }}</div>
+            <div class="stat-label">Registered Students</div>
+          </div>
         </div>
+      </div>
     </div>
+  </div>
 
-    <!-- Announcement Panel -->
-    <div class="col-md-6">
-        <div class="card mb-3">
-        <div class="card-header bg-primary text-white">Announcements</div>
-        <div class="card-body">
-        <!-- Form to post new announcement -->
-        <form method="POST" action="{{ url_for('admin_dashboard') }}">
-            <textarea name="content" class="form-control mb-2" placeholder="New Announcement" required></textarea>
-            <button type="submit" class="btn btn-success">Submit</button>
-        </form>
-
-        <hr>
-        <h5>Posted Announcements</h5>
-            <div id="announcements">
-                    {% for ann in announcements %}
-                        <p><strong>CSS Admin | {{ ann.created_at }}</strong><br>{{ ann.content }}</p>
-                    {% else %}
-                        <p>No announcements yet.</p>
-                    {% endfor %}
-            </div>
+  <div class="col-12 col-sm-4">
+    <div class="dash-card card">
+      <div class="card-body p-3">
+        <div class="stat-tile" style="background:#ecfdf5;">
+          <div class="stat-icon" style="background:#d1fae5;">&#9989;</div>
+          <div>
+            <div class="stat-value" style="color:#065f46;">{{ current_count }}</div>
+            <div class="stat-label">Currently Sitting In</div>
+          </div>
         </div>
-        </div>
+      </div>
     </div>
+  </div>
+
+  <div class="col-12 col-sm-4">
+    <div class="dash-card card">
+      <div class="card-body p-3">
+        <div class="stat-tile" style="background:#faf5ff;">
+          <div class="stat-icon" style="background:#ede9fe;">&#128202;</div>
+          <div>
+            <div class="stat-value" style="color:#4c1d95;">{{ total_sitin }}</div>
+            <div class="stat-label">Total Sit-Ins</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Main Two-Column Grid ── -->
+<div class="row g-4">
+
+  <!-- Statistics + Chart -->
+  <div class="col-12 col-lg-5">
+    <div class="dash-card card">
+      <div class="card-header-custom">
+        <div class="header-icon">&#128202;</div>
+        Students per Course
+      </div>
+      <div class="card-body d-flex align-items-center justify-content-center py-4">
+        <div style="max-width:320px; width:100%;">
+          <canvas id="courseChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Announcements -->
+  <div class="col-12 col-lg-7">
+    <div class="dash-card card">
+      <div class="card-header-custom">
+        <div class="header-icon">&#128226;</div>
+        Announcements
+      </div>
+      <div class="card-body p-0">
+
+        <!-- Post form -->
+        <div class="p-3 border-bottom" style="background:#f8faff;">
+          <form method="POST" action="{{ url_for('admin_dashboard') }}">
+            <label class="form-label-sm d-block mb-1" style="font-size:0.78rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.4px;">
+              New Announcement
+            </label>
+            <textarea name="content" class="form-control mb-2"
+                      rows="2"
+                      placeholder="Type your announcement here..."
+                      required
+                      style="resize:none; border-radius:8px; font-size:0.875rem;"></textarea>
+            <div class="d-flex justify-content-end">
+              <button type="submit" class="btn btn-sm fw-semibold rounded-3 px-4"
+                      style="background:#144c94; color:#fff; font-size:0.8rem;">
+                &#128228; Post Announcement
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Posted list -->
+        <div class="scroll-area p-3" style="max-height:340px;">
+
+          {% for ann in announcements %}
+            <div class="mb-3 p-3 rounded-3" style="border-left:4px solid #144c94; background:#f8faff;">
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge rounded-pill"
+                      style="background:#144c94; font-size:0.68rem; font-weight:600;">
+                  CCS Admin
+                </span>
+                <span class="text-muted" style="font-size:0.75rem;">{{ ann.created_at }}</span>
+              </div>
+              <p class="mb-0" style="font-size:0.875rem; color:#374151;">{{ ann.content }}</p>
+            </div>
+          {% else %}
+            <div class="text-center py-4 text-muted">
+              <div style="font-size:2rem; margin-bottom:6px;">&#128226;</div>
+              <p class="mb-0 small">No announcements posted yet.</p>
+            </div>
+          {% endfor %}
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+(function () {
     const ctx = document.getElementById('courseChart').getContext('2d');
-    const courseChart = new Chart(ctx, {
-        type: 'pie',
+    new Chart(ctx, {
+        type: 'doughnut',
         data: {
             labels: {{ chart_labels|safe }},
             datasets: [{
                 label: 'Students per Course',
                 data: {{ chart_values|safe }},
-                backgroundColor: [
-                    '#007bff', '#dc3545', '#ffc107', '#28a745', '#17a2b8'
-                ],
+                backgroundColor: ['#144c94', '#1a5eab', '#2e7cd6', '#5b9bd5', '#a8c8f0'],
+                borderWidth: 2,
+                borderColor: '#fff',
+                hoverOffset: 6
             }]
         },
         options: {
-            responsive: true
+            responsive: true,
+            cutout: '60%',
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 16,
+                        font: { size: 12, family: "'Segoe UI', system-ui, sans-serif" },
+                        usePointStyle: true,
+                        pointStyleWidth: 10
+                    }
+                },
+                tooltip: {
+                    backgroundColor: '#0d3870',
+                    titleFont: { size: 13 },
+                    bodyFont: { size: 12 },
+                    padding: 10,
+                    cornerRadius: 8
+                }
+            }
         }
     });
+})();
 </script>
 
 {% endblock %}

@@ -2,7 +2,7 @@ import os
 from werkzeug.utils import secure_filename
 from werkzeug.security import check_password_hash
 from flask import Flask, request, jsonify, url_for, render_template, redirect, session, flash, json
-from models.student_models import register_students, view_students, student_session, update_student, view_all_students, student_verify_password, change_student_password
+from models.student_models import register_students, view_students, student_session, update_student, view_all_students, student_verify_password, change_student_password, delete_students
 from database import setup_database, close_db
 from models.admin_models import (
     search_student,
@@ -14,7 +14,9 @@ from models.admin_models import (
     add_announcement,
     get_announcement,
     view_all_sitin_purposes,
-    is_already_sitin
+    is_already_sitin,
+    reset_all_sessions,
+    admin_update_student
 )
 
 
@@ -97,6 +99,87 @@ def register_student_route():
 
     return render_template("student/register.html")
 
+@app.route("/student/add", methods= ["GET", "POST"])
+def add_student():
+
+    if request.method == "POST":
+        id_number = request.form.get("id_number")
+        first_name = request.form.get("first_name", "").strip()
+        last_name = request.form.get("last_name", "").strip()
+        middle_name = request.form.get("middle_name", "").strip()
+        course_level = request.form.get("course_level")
+        password_input = request.form.get("password")
+        email = request.form.get("email")
+        course = request.form.get("course")
+        address = request.form.get("address")
+
+        form_data = dict(
+            id_number = id_number,
+            first_name = first_name,
+            last_name = last_name,
+            middle_name = middle_name,
+            course_level = course_level,
+            password_input = password_input,
+            email = email,
+            course = course,
+            address = address
+        )
+
+        if not all([id_number, first_name, last_name, course_level, email, course, address, password_input]):
+            flash("All fields must be filled!", "danger")
+            return render_template("admin/admin_students.html", **form_data)
+        
+        if len(password_input) < 8:
+            flash("Password must be 8 Characters Long!")
+            return render_template("admin/admin_students.html", **form_data)
+        
+        if len(first_name) > 30 or len(last_name) > 30 or (middle_name and len(middle_name) > 30):
+            flash("Names cannot exceed 30 characters", "danger")
+            return render_template("admin/admin_students.html", **form_data)
+
+        if len(id_number) != 8:
+            flash("ID number must be 8 digits!", "danger")
+            return render_template("admin/admin_students.html", **form_data)
+        
+        try:
+            register_students({
+                "id_number": id_number,
+                "first_name": first_name,
+                "last_name": last_name,
+                "middle_name": middle_name,
+                "course_level": course_level,
+                "password": password_input,
+                "email": email,
+                "course": course,
+                "address": address
+            })
+        except Exception:
+            flash("ID already exists!", "danger")
+            return render_template("admin/admin_students.html", **form_data)
+
+        return redirect (url_for("add_student"))
+
+    return render_template("admin/admin_students.html")
+
+@app.route("/admin/students/<id_number>/delete", methods=["POST"])
+def delete_student_route(id_number):
+    delete_students(id_number)
+    flash("Student deleted successfully!", "success")
+    return redirect(url_for("add_student"))
+
+ 
+@app.route("/reset-session", methods=["POST"])
+def reset_sessions():
+
+    if "user" not in session or session.get("role") != "admin":
+        flash("Please log in first", "warning")
+        return redirect(url_for("login"))
+    
+    reset_all_sessions()
+
+    flash("All student sessions have been reset for the new semester.", "success")
+    return render_template("admin/admin_students.html")
+        
 
 
 @app.route("/login", methods = ["GET", "POST"])
@@ -206,6 +289,48 @@ def admin_dashboard():
         chart_values=json.dumps(chart_values),
         announcements=announcements
     )
+
+
+#------------------------------------
+#EDIT STUDENT PROFILE (ADMIN)       |
+#------------------------------------
+@app.route("/admin/students/<id_number>/edit", methods=["POST"])
+def admin_edit_student(id_number):
+   
+    if "user" not in session or session.get("role") != "admin":
+        flash("Please log in as admin!", "warning")
+        return redirect(url_for("login"))
+
+    # ✅ Check if student exists
+    student = view_students(id_number)
+    if not student:
+        flash("Student not found!", "danger")
+        return redirect(url_for("admin_students"))
+
+    # ✅ Gather form data
+    data = {
+        "id_number": id_number,
+        "first_name": request.form.get("first_name", "").strip(),
+        "middle_name": request.form.get("middle_name", "").strip(),
+        "last_name": request.form.get("last_name", "").strip(),
+        "course_level": int(request.form.get("course_level", student["course_level"])),
+        "course": request.form.get("course", student["course"]),
+        "email": request.form.get("email", student["email"]),
+        "address": request.form.get("address", student["address"]),
+        "sessions_remaining": min(
+            max(int(request.form.get("sessions_remaining", student["sessions_remaining"])), 0), 30
+        ),
+    }
+
+    
+    try:
+        admin_update_student(data)
+        flash("Student updated successfully!", "success")
+    except Exception as e:
+        flash(f"Update failed: {str(e)}", "danger")
+        return redirect(url_for("admin_edit_student", id_number=id_number))
+
+    return redirect(url_for("admin_students"))
 
 #------------------------------------
 #EDIT PROFILE (STUDENT)             |
@@ -402,7 +527,50 @@ def root():
     return redirect(url_for("login"))
 
 
+
+
 """
+
+#FOR ADMIN- EDIT PROFILE FOR STUDENT
+
+@app.route("/admin/students/<id_number>/edit", methods=["POST"])
+def admin_edit_student(id_number):
+    if "user" not in session or session.get("role") != "admin":
+        flash("Please log in as admin!", "warning")
+        return redirect(url_for("login"))
+
+    student = view_students(id_number)
+    if not student:
+        flash("Student not found!", "danger")
+        return redirect(url_for("admin_students"))
+
+    if request.method == "POST":
+        # Gather form data
+        data = {
+            "id_number": id_number,
+            "first_name": request.form.get("first_name", "").strip(),
+            "middle_name": request.form.get("middle_name", "").strip(),
+            "last_name": request.form.get("last_name", "").strip(),
+            "course_level": int(request.form.get("course_level", student["course_level"])),
+            "course": request.form.get("course", student["course"]),
+            "email": request.form.get("email", student["email"]),
+            "address": request.form.get("address", student["address"]),
+            "sessions_remaining": min(
+                max(int(request.form.get("sessions_remaining", student["sessions_remaining"])), 0), 30
+            ),
+        }
+
+       
+        try:
+            update_student(data)
+            flash("Student updated successfully!", "success")
+        except Exception as e:
+            flash(f"Update failed: {str(e)}", "danger")
+            return redirect(url_for("admin_edit_student", id_number=id_number))
+
+        return redirect(url_for("admin_students"))
+
+    return render_template("admin/admin_students.html", student=student)
 
 
 
@@ -464,4 +632,4 @@ def student_session_route():
 """
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)

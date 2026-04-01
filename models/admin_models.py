@@ -30,6 +30,13 @@ def search_student(keyword):
         fetchall=True
     )
 
+def reset_all_sessions():
+    return execute("""
+        UPDATE students
+        SET sessions_remaining = 30,
+            total_session_used = 0
+    """, commit=True)
+
 
 # ---------------------------
 # START SIT-IN
@@ -42,6 +49,9 @@ def start_sitin(data):
     
     if is_already_sitin(student["id"]):
         raise Exception("Student already has an active session!")
+    
+    if is_pc_in_use(data.get("pc_number"), data.get("lab_room")):
+        raise Exception(f"PC {data.get('pc_number')} in {data.get('lab_room')} is already in use!")
 
     if student["sessions_remaining"] <= 0:
         raise Exception("No sessions remaining")
@@ -157,3 +167,30 @@ def is_already_sitin(student_id):
         WHERE student_id = ?
         AND logout_time IS NULL
     """, (student_id,), fetchone=True)
+
+def is_pc_in_use(pc_number, lab_room):
+    return execute("""
+        SELECT 1 FROM sessions_history
+        WHERE pc_number = ?
+        AND lab_room = ?
+        AND logout_time IS NULL
+    """, (pc_number, lab_room), fetchone=True)
+
+def admin_update_student(data):
+    student = view_students(data["id_number"])
+    if not student:
+        raise Exception("Student not Found")
+    
+    query = """UPDATE students SET first_name = ?, middle_name = ?, last_name = ?, course_level = ?, course = ?, email = ?, address = ?, sessions_remaining = ? WHERE id_number = ?"""
+    execute(query, (data["first_name"],
+                    data["middle_name"],
+                    data["last_name"],
+                    data["course_level"],
+                    data["course"],
+                    data["email"],
+                    data["address"],
+                    data["sessions_remaining"],  
+                    data["id_number"]  
+                   ),
+                        commit=True
+            )
