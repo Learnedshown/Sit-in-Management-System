@@ -81,7 +81,8 @@ def setup_database(app):
             session_date TEXT NOT NULL,
             purpose TEXT,
             pc_number TEXT,
-            lab_room TEXT,       
+            lab_room TEXT,
+            is_deleted BOOLEAN DEFAULT 0,
             FOREIGN KEY(student_id) REFERENCES students(id)
         )
 
@@ -93,7 +94,8 @@ def setup_database(app):
         CREATE TABLE IF NOT EXISTS announcements(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             content TEXT NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP     
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            is_deleted BOOLEAN DEFAULT 0 
         )
         
         """)

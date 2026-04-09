@@ -25,10 +25,62 @@ def register_students(data):
 def view_students(id_number):
     query = "SELECT * FROM students WHERE id_number = ?" 
     return execute(query, (id_number,), fetchone=True)
-
 def delete_students(id_number):
-   query = "DELETE FROM students WHERE id_number = ?"
-   execute(query, (id_number,), commit=True)
+  
+    student = execute(
+        "SELECT id FROM students WHERE id_number = ?",
+        (id_number,),
+        fetchone=True
+    )
+
+    if not student:
+        raise Exception("Student not found")
+
+    student_id = student["id"]
+    execute("DELETE FROM sessions_history WHERE student_id = ?", (student_id,))
+
+    execute("DELETE FROM students WHERE id_number = ?", (id_number,), commit=True)
+
+
+""" DELETE STUDENT (SOFT)
+def delete_students(id_number):
+
+    student = execute(
+        "SELECT id FROM students WHERE id_number = ? AND is_deleted = 0",
+        (id_number,),
+        fetchone=True
+    )
+
+    if not student:
+        raise Exception("Student not found")
+
+    student_id = student["id"]
+
+    execute(
+        "UPDATE sessions_history SET is_deleted = 1 WHERE student_id = ?",
+        (student_id,)
+    )
+
+    execute(
+        "UPDATE students SET is_deleted = 1 WHERE id_number = ?",
+        (id_number,),
+        commit=True
+    )
+
+def delete_session(session_id, student_id):
+   execute(
+      "UPDATE sessions_history SET is_deleted = 1 WHERE id = ? AND student_id ?",
+      (session_id, student_id),
+      commit=True
+   )
+
+def delete_student_account(student_id):
+   execute(
+      "UPDATE students SET is_deleted = 1 WHERE id = ?",
+      (student_id,),
+      commit=True
+   )
+"""
 
 def update_student(data):
    student = view_students(data["id_number"])

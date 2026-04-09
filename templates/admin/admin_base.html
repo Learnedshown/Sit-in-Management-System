@@ -221,31 +221,293 @@
         .scroll-area::-webkit-scrollbar-track { background: transparent; }
         .scroll-area::-webkit-scrollbar-thumb { background: #cdd5e0; border-radius: 4px; }
 
-        /* ── Modal polish ── */
-        .modal-header {
-            background: linear-gradient(135deg, var(--uc-blue-dark), var(--uc-blue));
-            color: #fff;
-            border-radius: 12px 12px 0 0;
-        }
-
-        .modal-header .modal-title { font-weight: 700; }
-        .modal-header .btn-close { filter: invert(1) brightness(2); }
-
+        /* ── Modal ── */
         .modal-content {
             border: none;
-            border-radius: 14px;
-            box-shadow: 0 16px 48px rgba(0,0,0,0.18);
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            overflow: hidden;
         }
 
-        .modal-body { padding: 1.5rem; }
+        /* ── Sit-In Modal Header ── */
+        .sitin-modal-header {
+            background: linear-gradient(135deg, var(--uc-blue-dark), var(--uc-blue));
+            padding: 18px 20px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
 
-        .form-label-sm {
-            font-size: 0.78rem;
-            font-weight: 600;
+        .sitin-modal-header .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sitin-modal-header .header-icon-wrap {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.18);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .sitin-modal-header .header-title {
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        .sitin-modal-header .header-subtitle {
+            color: rgba(255,255,255,0.72);
+            font-size: 0.75rem;
+            margin: 0;
+            margin-top: 1px;
+        }
+
+        .sitin-modal-header .btn-close-modal {
+            width: 32px;
+            height: 32px;
+            background: rgba(255,255,255,0.15);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.15s;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+
+        .sitin-modal-header .btn-close-modal:hover {
+            background: rgba(255,255,255,0.28);
+        }
+
+        /* ── Step panels ── */
+        .sitin-step {
+            display: none;
+            padding: 22px 20px 20px;
+            background: #fff;
+        }
+
+        .sitin-step.active {
+            display: block;
+        }
+
+        /* ── Form elements ── */
+        .sitin-label {
+            font-size: 0.72rem;
+            font-weight: 700;
             color: #6b7280;
             text-transform: uppercase;
-            letter-spacing: 0.4px;
-            margin-bottom: 4px;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .sitin-input-wrap {
+            position: relative;
+        }
+
+        .sitin-input-wrap .input-prefix {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            font-size: 0.85rem;
+            font-weight: 600;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .sitin-input-wrap input.has-prefix {
+            padding-left: 30px;
+        }
+
+        .sitin-input,
+        .sitin-select {
+            width: 100%;
+            border: 1.5px solid #e5eaf2;
+            border-radius: 8px;
+            padding: 9px 12px;
+            font-size: 0.9rem;
+            color: #111827;
+            background: #fff;
+            transition: border-color 0.18s, box-shadow 0.18s;
+            outline: none;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+
+        .sitin-input:focus,
+        .sitin-select:focus {
+            border-color: var(--uc-blue);
+            box-shadow: 0 0 0 3px rgba(20, 76, 148, 0.1);
+        }
+
+        .sitin-input::placeholder {
+            color: #c4cad6;
+        }
+
+        .sitin-input[readonly] {
+            background: #f8faff;
+            color: #374151;
+        }
+
+        .sitin-select-wrap {
+            position: relative;
+        }
+
+        .sitin-select-wrap::after {
+            content: '▾';
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: #9ca3af;
+            font-size: 0.8rem;
+        }
+
+        /* ── Danger alert ── */
+        .sitin-alert-danger {
+            background: #fff1f2;
+            border: 1.5px solid #fecdd3;
+            border-radius: 8px;
+            color: #be123c;
+            font-size: 0.84rem;
+            font-weight: 600;
+            padding: 10px 14px;
+            margin-top: 12px;
+            display: none;
+        }
+
+        .sitin-alert-danger.visible {
+            display: block;
+        }
+
+        /* ── Student found card ── */
+        .student-found-card {
+            background: #f0f6ff;
+            border: 1.5px solid #d0e0f8;
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .student-found-card .sfc-avatar {
+            width: 38px;
+            height: 38px;
+            background: var(--uc-blue);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .student-found-card .sfc-name {
+            font-weight: 700;
+            font-size: 0.92rem;
+            color: var(--uc-blue-dark);
+            margin: 0 0 1px;
+        }
+
+        .student-found-card .sfc-meta {
+            font-size: 0.76rem;
+            color: #4b6a9b;
+            margin: 0;
+        }
+
+        /* ── Buttons ── */
+        .btn-sitin-search {
+            width: 100%;
+            background: var(--uc-blue);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 11px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            transition: background 0.18s, transform 0.1s;
+            margin-top: 16px;
+        }
+
+        .btn-sitin-search:hover { background: var(--uc-blue-dark); }
+        .btn-sitin-search:active { transform: scale(0.98); }
+
+        .btn-sitin-confirm {
+            background: var(--uc-blue);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 22px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.18s;
+        }
+
+        .btn-sitin-confirm:hover {
+            background: var(--uc-blue-dark);
+            color: #fff;
+        }
+
+        .btn-sitin-back {
+            background: none;
+            color: #6b7280;
+            border: 1.5px solid #e5eaf2;
+            border-radius: 8px;
+            padding: 10px 22px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: border-color 0.15s, color 0.15s;
+        }
+
+        .btn-sitin-back:hover {
+            border-color: #9ca3af;
+            color: #374151;
+        }
+
+        /* ── Modal footer ── */
+        .sitin-modal-footer {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 10px;
+            padding: 14px 20px 18px;
+            background: #fff;
+            border-top: 1px solid #f0f2f7;
+        }
+
+        /* ── Confirm message ── */
+        .sitin-message {
+            font-size: 0.82rem;
+            font-weight: 600;
+            text-align: center;
+            margin-top: 10px;
+            min-height: 18px;
         }
 
         .navbar-toggler { border-color: rgba(255,255,255,0.4); }
@@ -295,7 +557,7 @@
         <!-- Search triggers Sit-in modal -->
         <li class="nav-item">
           <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#searchModal">
-            &#128270; Sit-in
+            &#128270; Search
           </a>
         </li>
 
@@ -327,81 +589,105 @@
 
 <!-- ══════════════ SIT-IN MODAL ══════════════ -->
 <div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="searchModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 460px;">
     <div class="modal-content">
 
-      <div class="modal-header">
-        <h5 class="modal-title" id="searchModalLabel">&#128187; Sit-In Form</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      <!-- Header -->
+      <div class="sitin-modal-header">
+        <div class="header-left">
+          <div class="header-icon-wrap">&#128187;</div>
+          <div>
+            <p class="header-title">Sit-In Form</p>
+            <p class="header-subtitle">Computer Laboratory Management</p>
+          </div>
+        </div>
+        <button type="button" class="btn-close-modal" data-bs-dismiss="modal" aria-label="Close">&#10005;</button>
       </div>
 
-      <div class="modal-body">
+      <!-- Step 1: Search Student -->
+      <div class="sitin-step active" id="step-search">
+        <label class="sitin-label" for="id_number">ID Number</label>
+        <div class="sitin-input-wrap">
+          <span class="input-prefix">#</span>
+          <input type="text" id="id_number" class="sitin-input has-prefix"
+                 placeholder="e.g. 22-1234"
+                 oninput="onIdInput()"
+                 onkeydown="if(event.key==='Enter') searchStudent()">
+        </div>
+
+        <div id="search-alert" class="sitin-alert-danger">
+          &#9888; Student not found. Please check the ID and try again.
+        </div>
+
+        <button class="btn-sitin-search" onclick="searchStudent()" id="btn-search">
+          &#128270; Search Student
+        </button>
+      </div>
+
+      <!-- Step 2: Sit-In Details (shown only after student is found) -->
+      <div class="sitin-step" id="step-details">
+
+        <!-- Hidden values -->
+        <input type="hidden" id="student_name" value="">
+        <input type="hidden" id="sessions" value="">
+
+        <!-- Student found card -->
+        <div class="student-found-card">
+          <div class="sfc-avatar">&#128100;</div>
+          <div>
+            <p class="sfc-name" id="sfc-name"></p>
+            <p class="sfc-meta" id="sfc-meta"></p>
+          </div>
+        </div>
 
         <div class="row g-3">
-
-          <div class="col-12">
-            <label class="form-label-sm">ID Number</label>
-            <input type="text" id="id_number" class="form-control"
-                   placeholder="Enter student ID" onkeyup="fetchStudent()">
+          <div class="col-12 col-sm-6">
+            <label class="sitin-label" for="purpose">Purpose / Language</label>
+            <div class="sitin-select-wrap">
+              <select id="purpose" class="sitin-select" required>
+                <option value="">-- Select Language --</option>
+                <option value="C#">C#</option>
+                <option value="C">C</option>
+                <option value="Java">Java</option>
+                <option value="Python">Python</option>
+                <option value="PHP">PHP</option>
+              </select>
+            </div>
           </div>
 
-          <div class="col-12">
-            <label class="form-label-sm">Student Name</label>
-            <input type="text" id="student_name" class="form-control" readonly
-                   placeholder="Auto-filled after ID lookup"
-                   style="background:#f8faff;">
+          <div class="col-12 col-sm-6">
+            <label class="sitin-label" for="lab_room">Lab Room</label>
+            <div class="sitin-select-wrap">
+              <select id="lab_room" class="sitin-select" required>
+                <option value="">-- Select Lab --</option>
+                <option value="524">524</option>
+                <option value="544">544</option>
+                <option value="540">540</option>
+                <option value="530">530</option>
+              </select>
+            </div>
           </div>
 
-          <div class="col-12 col-md-6">
-            <label class="form-label-sm">Purpose / Language</label>
-            <select id="purpose" class="form-select" required>
-              <option value="">-- Select Language --</option>
-              <option value="C#">C#</option>
-              <option value="C">C</option>
-              <option value="Java">Java</option>
-              <option value="Python">Python</option>
-              <option value="PHP">PHP</option>
-            </select>
-          </div>
-
-          <div class="col-12 col-md-6">
-            <label class="form-label-sm">Lab Room</label>
-            <select id="lab_room" class="form-select" required>
-              <option value="">-- Select Lab --</option>
-              <option value="524">524</option>
-              <option value="544">544</option>
-              <option value="540">540</option>
-              <option value="530">530</option>
-            </select>
-          </div>
-
-          <div class="col-12 col-md-6">
-            <label class="form-label-sm">PC Number</label>
-            <input type="text" id="pc_number" class="form-control"
+          <div class="col-12 col-sm-6">
+            <label class="sitin-label" for="pc_number">PC Number</label>
+            <input type="text" id="pc_number" class="sitin-input"
                    placeholder="e.g. 12" required>
           </div>
 
-          <div class="col-12 col-md-6">
-            <label class="form-label-sm">Remaining Sessions</label>
-            <input type="text" id="sessions" class="form-control" readonly
-                   placeholder="Auto-filled"
+          <div class="col-12 col-sm-6">
+            <label class="sitin-label">Remaining Sessions</label>
+            <input type="text" id="sessions_display" class="sitin-input" readonly
                    style="background:#f8faff;">
           </div>
-
         </div>
 
-        <p id="message" class="mt-3 text-center fw-semibold small mb-0"></p>
-
+        <p id="message" class="sitin-message"></p>
       </div>
 
-      <div class="modal-footer border-0 pt-0 px-4 pb-4">
-        <button class="btn btn-outline-secondary rounded-3 px-4"
-                data-bs-dismiss="modal">Cancel</button>
-        <button class="btn rounded-3 px-4 fw-semibold"
-                style="background:#144c94; color:#fff;"
-                onclick="startSitIn()">
-          &#10003; Confirm Sit-In
-        </button>
+      <!-- Footer: only visible on step 2 -->
+      <div class="sitin-modal-footer" id="modal-footer" style="display:none;">
+        <button class="btn-sitin-back" onclick="goBackToSearch()">&#8592; Back</button>
+        <button class="btn-sitin-confirm" onclick="startSitIn()">&#10003; Confirm Sit-In</button>
       </div>
 
     </div>
@@ -412,60 +698,139 @@
 <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
 
 <script>
-function fetchStudent() {
-    const id = document.getElementById("id_number").value;
-    if (id.length < 3) return;
+  /* ── Show step 1 (search) ── */
+  function showSearchStep() {
+    document.getElementById('step-search').classList.add('active');
+    document.getElementById('step-details').classList.remove('active');
+    document.getElementById('modal-footer').style.display = 'none';
+  }
 
-    fetch("/view_student/" + id)
-        .then(res => res.json())
-        .then(data => {
-            if (!data.error) {
-                document.getElementById("student_name").value =
-                    data.first_name + " " + data.last_name;
-                document.getElementById("sessions").value =
-                    data.sessions_remaining;
-            } else {
-                document.getElementById("student_name").value = "";
-                document.getElementById("sessions").value = "";
-            }
-        });
-}
+  /* ── Show step 2 (sit-in form) ── */
+  function showDetailsStep() {
+    document.getElementById('step-search').classList.remove('active');
+    document.getElementById('step-details').classList.add('active');
+    document.getElementById('modal-footer').style.display = 'flex';
+  }
 
-function startSitIn() {
-    const id      = document.getElementById("id_number").value.trim();
-    const purpose = document.getElementById("purpose").value;
-    const pc      = document.getElementById("pc_number").value.trim();
-    const lab     = document.getElementById("lab_room").value;
-    const msg     = document.getElementById("message");
+  /* ── Back button ── */
+  function goBackToSearch() {
+    showSearchStep();
+    document.getElementById('message').textContent = '';
+    document.getElementById('purpose').value = '';
+    document.getElementById('lab_room').value = '';
+    document.getElementById('pc_number').value = '';
+  }
 
-    if (!id || !purpose || !pc || !lab) {
-        msg.innerText = "All fields are required!";
-        msg.className = "mt-3 text-center fw-semibold small mb-0 text-danger";
-        return;
+  /* ── Clear alert when user types a new ID ── */
+  function onIdInput() {
+    document.getElementById('search-alert').classList.remove('visible');
+  }
+
+  /* ── Search student ── */
+  function searchStudent() {
+    const id  = document.getElementById('id_number').value.trim();
+    const btn = document.getElementById('btn-search');
+
+    if (!id) {
+      document.getElementById('search-alert').textContent =
+        '⚠ Please enter a student ID.';
+      document.getElementById('search-alert').classList.add('visible');
+      return;
     }
 
-    fetch("/admin/sitin", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({ id_number: id, purpose, pc_number: pc, lab_room: lab })
+    btn.textContent = 'Searching…';
+    btn.disabled = true;
+    document.getElementById('search-alert').classList.remove('visible');
+
+    fetch('/view_student/' + encodeURIComponent(id))
+      .then(res => res.json())
+      .then(data => {
+        btn.innerHTML = '&#128270; Search Student';
+        btn.disabled = false;
+
+        if (data.error) {
+          document.getElementById('search-alert').textContent =
+            '⚠ Student not found. Please check the ID and try again.';
+          document.getElementById('search-alert').classList.add('visible');
+        } else {
+          const fullName = data.first_name + ' ' + data.last_name;
+
+          /* Fill hidden fields */
+          document.getElementById('student_name').value = fullName;
+          document.getElementById('sessions').value     = data.sessions_remaining;
+
+          /* Fill student card */
+          document.getElementById('sfc-name').textContent = fullName;
+          document.getElementById('sfc-meta').textContent =
+            'Sessions remaining: ' + data.sessions_remaining;
+
+          /* Fill sessions display */
+          document.getElementById('sessions_display').value = data.sessions_remaining;
+
+          showDetailsStep();
+        }
+      })
+      .catch(() => {
+        btn.innerHTML = '&#128270; Search Student';
+        btn.disabled = false;
+        document.getElementById('search-alert').textContent =
+          '⚠ Server error. Please try again.';
+        document.getElementById('search-alert').classList.add('visible');
+      });
+  }
+
+  /* ── Confirm sit-in ── */
+  function startSitIn() {
+    const id      = document.getElementById('id_number').value.trim();
+    const purpose = document.getElementById('purpose').value;
+    const pc      = document.getElementById('pc_number').value.trim();
+    const lab     = document.getElementById('lab_room').value;
+    const msg     = document.getElementById('message');
+
+    if (!id || !purpose || !pc || !lab) {
+      msg.textContent = 'All fields are required.';
+      msg.className = 'sitin-message text-danger';
+      return;
+    }
+
+    fetch('/admin/sitin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ id_number: id, purpose, pc_number: pc, lab_room: lab })
     })
     .then(res => res.json())
     .then(data => {
-        if (data.success) {
-            msg.innerText = data.message;
-            msg.className = "mt-3 text-center fw-semibold small mb-0 text-success";
-            ["id_number","student_name","sessions","pc_number","purpose","lab_room"]
-                .forEach(id => document.getElementById(id).value = "");
-        } else {
-            msg.innerText = data.message;
-            msg.className = "mt-3 text-center fw-semibold small mb-0 text-danger";
-        }
+      if (data.success) {
+        msg.textContent = data.message;
+        msg.className = 'sitin-message text-success';
+        setTimeout(() => resetModal(), 1800);
+      } else {
+        msg.textContent = data.message;
+        msg.className = 'sitin-message text-danger';
+      }
     })
     .catch(() => {
-        msg.innerText = "Server error. Please try again.";
-        msg.className = "mt-3 text-center fw-semibold small mb-0 text-danger";
+      msg.textContent = 'Server error. Please try again.';
+      msg.className = 'sitin-message text-danger';
     });
-}
+  }
+
+  /* ── Full reset ── */
+  function resetModal() {
+    ['id_number','student_name','sessions','sessions_display',
+     'pc_number','purpose','lab_room'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    document.getElementById('sfc-name').textContent = '';
+    document.getElementById('sfc-meta').textContent = '';
+    document.getElementById('message').textContent  = '';
+    document.getElementById('search-alert').classList.remove('visible');
+    showSearchStep();
+  }
+
+  /* ── Reset on modal close ── */
+  document.getElementById('searchModal').addEventListener('hidden.bs.modal', resetModal);
 </script>
 
 </body>

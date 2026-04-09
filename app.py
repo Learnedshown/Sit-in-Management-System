@@ -190,7 +190,7 @@ def login():
         
         if not id_number or not password:
             return render_template("auth/login.html", error="ID and password is required")
-        
+                
         if admin_verify_password(id_number, password):
             session["user"] = id_number
             session["role"] = "admin"
