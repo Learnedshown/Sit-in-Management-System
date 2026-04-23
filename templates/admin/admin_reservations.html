@@ -1,0 +1,253 @@
+{% extends "admin/admin_base.html" %}
+
+{% block title %}Manage Reservations{% endblock %}
+
+{% block content %}
+
+<!-- Page Header -->
+<div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+  <div>
+    <h4>📅 Manage Reservations</h4>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item active">Reservations</li>
+      </ol>
+    </nav>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="dash-card card mb-4">
+  <div class="card-body">
+    <form method="GET" class="row g-3 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">Status</label>
+        <select name="status" class="form-select" style="border-radius: 10px;">
+          <option value="all" {% if current_status == 'all' %}selected{% endif %}>All</option>
+          <option value="Pending" {% if current_status == 'Pending' %}selected{% endif %}>Pending</option>
+          <option value="Approved" {% if current_status == 'Approved' %}selected{% endif %}>Approved</option>
+          <option value="Rejected" {% if current_status == 'Rejected' %}selected{% endif %}>Rejected</option>
+          <option value="Completed" {% if current_status == 'Completed' %}selected{% endif %}>Completed</option>
+          <option value="Cancelled" {% if current_status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+        </select>
+      </div>
+      
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">Date</label>
+        <input type="date" name="date" class="form-control" value="{{ current_date }}" style="border-radius: 10px;">
+      </div>
+      
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">Search</label>
+        <input type="text" name="search" class="form-control" placeholder="Student name or ID" 
+               value="{{ current_search }}" style="border-radius: 10px;">
+      </div>
+      
+      <div class="col-md-2">
+        <button type="submit" class="btn w-100" style="background:#144c94; color:white; border-radius: 10px;">
+          🔍 Filter
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Reservations Table -->
+<div class="dash-card card">
+  <div class="card-header-custom">
+    <div class="header-icon">📋</div>
+    All Reservations
+  </div>
+  <div class="card-body p-0">
+    <div style="overflow-x: auto;">
+      <table class="table table-hover mb-0">
+        <thead style="background:#f8faff;">
+          <tr>
+            <th style="padding: 1rem;">Student</th>
+            <th style="padding: 1rem;">Date & Time</th>
+            <th style="padding: 1rem;">Lab & PC</th>
+            <th style="padding: 1rem;">Purpose</th>
+            <th style="padding: 1rem;">Status</th>
+            <th style="padding: 1rem;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in reservations %}
+          <tr style="border-bottom: 1px solid #f0f0f0;">
+            <td style="padding: 1rem;">
+              <div>
+                <strong>{{ r.first_name }} {{ r.last_name }}</strong><br>
+                <small class="text-muted">{{ r.id_number }}</small>
+              </div>
+            </td>
+            <td style="padding: 1rem;">
+              <div>{{ r.reservation_date }}</div>
+              <small class="text-muted">{{ r.time_slot }}</small>
+            </td>
+            <td style="padding: 1rem;">
+              {{ r.lab_room }} | {{ r.pc_number }}
+            </td>
+            <td style="padding: 1rem;">
+              {{ r.purpose }}
+            </td>
+            <td style="padding: 1rem;">
+              {% if r.status == 'Pending' %}
+                <span class="badge" style="background:#fef3c7; color:#92400e;">Pending</span>
+              {% elif r.status == 'Approved' %}
+                <span class="badge" style="background:#d1fae5; color:#065f46;">Approved</span>
+              {% elif r.status == 'Rejected' %}
+                <span class="badge" style="background:#fee2e2; color:#991b1b;">Rejected</span>
+              {% elif r.status == 'Completed' %}
+                <span class="badge" style="background:#dbeafe; color:#1e40af;">Completed</span>
+              {% elif r.status == 'Cancelled' %}
+                <span class="badge" style="background:#f3f4f6; color:#4b5563;">Cancelled</span>
+              {% endif %}
+            </td>
+            <td style="padding: 1rem;">
+              {% if r.status == 'Pending' %}
+                <button class="btn btn-sm btn-success" onclick="openApproveModal({{ r.id }})" 
+                        style="border-radius: 6px;">✅ Approve</button>
+                <button class="btn btn-sm btn-danger" onclick="openRejectModal({{ r.id }})" 
+                        style="border-radius: 6px;">❌ Reject</button>
+              {% elif r.status == 'Approved' %}
+                <button class="btn btn-sm btn-warning" onclick="openCancelModal({{ r.id }})" 
+                        style="border-radius: 6px;">🚫 Cancel</button>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="6" class="text-center py-5 text-muted">
+              No reservations found
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Approve Modal -->
+<div class="modal fade" id="approveModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <form method="POST" id="approveForm">
+      <div class="modal-content" style="border-radius: 16px;">
+        <div class="modal-header">
+          <h5 class="modal-title">✅ Approve Reservation</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <label class="form-label">Remarks (Optional)</label>
+          <textarea name="remarks" class="form-control" rows="3" 
+                    placeholder="Add any notes for the student..."></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-success">Approve</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <form method="POST" id="rejectForm">
+      <div class="modal-content" style="border-radius: 16px;">
+        <div class="modal-header">
+          <h5 class="modal-title">❌ Reject Reservation</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <label class="form-label">Reason for rejection</label>
+          <textarea name="remarks" class="form-control" rows="3" required 
+                    placeholder="Tell the student why this reservation is rejected..."></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger">Reject</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Cancel Modal -->
+<div class="modal fade" id="cancelModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <form method="POST" id="cancelForm">
+      <div class="modal-content" style="border-radius: 16px;">
+        <div class="modal-header">
+          <h5 class="modal-title">🚫 Cancel Reservation</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to cancel this reservation?</p>
+          <label class="form-label">Reason (Optional)</label>
+          <textarea name="remarks" class="form-control" rows="2" 
+                    placeholder="Reason for cancellation..."></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+          <button type="submit" class="btn btn-warning">Yes, Cancel</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openApproveModal(reservationId) {
+  document.getElementById('approveForm').action = `/admin/reservation/${reservationId}/approve`;
+  new bootstrap.Modal(document.getElementById('approveModal')).show();
+}
+
+function openRejectModal(reservationId) {
+  document.getElementById('rejectForm').action = `/admin/reservation/${reservationId}/reject`;
+  new bootstrap.Modal(document.getElementById('rejectModal')).show();
+}
+
+function openCancelModal(reservationId) {
+  document.getElementById('cancelForm').action = `/admin/reservation/${reservationId}/cancel`;
+  new bootstrap.Modal(document.getElementById('cancelModal')).show();
+}
+</script>
+
+<style>
+  .dash-card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    background: #fff;
+  }
+  
+  .card-header-custom {
+    background: #fff;
+    border-bottom: 2px solid #eef2ff;
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: #1f2937;
+  }
+  
+  .header-icon {
+    background: #eef3fc;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+  }
+  
+  .table-hover tbody tr:hover {
+    background-color: #f8faff;
+  }
+</style>
+
+{% endblock %}

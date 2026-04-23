@@ -4,9 +4,12 @@ from werkzeug.security import generate_password_hash, check_password_hash
 def register_students(data):
     hashed_pw = generate_password_hash(data["password"])
     query = """ 
-        INSERT INTO students(id_number, first_name, middle_name, last_name, course_level, course, password, email, address)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """
+        INSERT INTO students(
+            id_number, first_name, middle_name, last_name,
+            course_level, course, password, email, address, points
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
+    """ 
 
     execute(query, (data["id_number"],
                     data["first_name"],
@@ -102,23 +105,34 @@ def update_student(data):
             )
    
 def change_student_password(data):
-   view_students(data["id_number"])
+    student = view_students(data["id_number"])
 
-   hash_pw = generate_password_hash(data["password"])
+    if not student:
+        raise Exception("Student not found")
 
-   query = """ UPDATE students SET password = ? WHERE id_number = ? """
-   execute(query, (hash_pw, data["id_number"]), commit=True)
+    hash_pw = generate_password_hash(data["password"])
 
+    query = """ UPDATE students SET password = ? WHERE id_number = ? """
+    execute(query, (hash_pw, data["id_number"]), commit=True)
 
 def student_session(data):
-  
-   view_students(data["id_number"])
-   
-   query = """ UPDATE students set sessions_remaining = sessions_remaining - 1, total_session_used = total_session_used + 1 WHERE id_number = ? AND sessions_remaining > 0 """
-   execute(query, (data["id_number"],
-                   ),
-                   commit=True
-          )
+    student = view_students(data["id_number"])
+
+    if not student:
+        raise Exception("Student not found")
+
+    if student["sessions_remaining"] <= 0:
+        raise Exception("No sessions remaining")
+
+    query = """
+        UPDATE students 
+        SET sessions_remaining = sessions_remaining - 1,
+            total_session_used = total_session_used + 1,
+            points = points + 1
+        WHERE id_number = ?
+    """
+
+    execute(query, (data["id_number"],), commit=True)
 
 
 def student_verify_password(id_number, password):
@@ -132,3 +146,52 @@ def student_verify_password(id_number, password):
 def view_all_students():
     query = "SELECT * FROM students"
     return execute(query, fetchall=True)
+
+# ---------------------------
+# STUDENT FEEDBACK
+# ---------------------------
+def save_feedback(session_id, message, rating):
+    return execute("""
+        INSERT INTO feedback (session_id, message, rating)
+        VALUES (?, ?, ?)
+    """, (session_id, message, rating), commit=True)
+
+def get_student_feedback(student_id):
+    return execute("""
+        SELECT message, rating, created_at
+        FROM feedback
+        WHERE student_id = ?
+        ORDER BY created_at DESC
+    """, (student_id,), fetchall=True)
+
+def get_student_points(id_number):
+    return execute("""
+        SELECT points FROM students WHERE id_number = ?
+    """, (id_number,), fetchone=True)
+
+
+def get_student_sitin_history(student_id):
+    return execute("""
+        SELECT * FROM sessions_history
+        WHERE student_id = ? AND is_deleted = 0
+        ORDER BY session_date DESC
+    """, (student_id,), fetchall=True)
+
+def get_student_history_with_feedback(student_id):
+    return execute("""
+        SELECT 
+            sh.session_id,
+            sh.session_date,
+            sh.login_time,
+            sh.logout_time,
+            sh.purpose,
+            sh.pc_number,
+            sh.lab_room,
+            f.message,
+            f.rating
+        FROM sessions_history sh
+        LEFT JOIN feedback f 
+            ON sh.session_id = f.session_id
+        WHERE sh.student_id = ?
+        ORDER BY sh.session_date DESC
+    """, (student_id,), fetchall=True)

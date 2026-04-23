@@ -1,0 +1,235 @@
+{% extends "student/dashboardbase.html" %}
+
+{% block title %}Make a Reservation{% endblock %}
+
+{% block content %}
+
+<!-- Page Header -->
+<div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+  <div>
+    <h4>📅 Make a Reservation</h4>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item active">Make Reservation</li>
+      </ol>
+    </nav>
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- Reservation Form -->
+  <div class="col-lg-5">
+    <div class="dash-card card">
+      <div class="card-header-custom">
+        <div class="header-icon">📝</div>
+        Reservation Details
+      </div>
+      <div class="card-body">
+        <form method="POST" id="reservationForm">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Purpose</label>
+            <select name="purpose" class="form-select" required style="border-radius: 10px;">
+              <option value="">Select purpose</option>
+              {% for p in purposes %}
+                <option value="{{ p.purpose }}">{{ p.purpose }}</option>
+              {% endfor %}
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Lab Room</label>
+            <select name="lab_room" id="labRoom" class="form-select" required style="border-radius: 10px;">
+              <option value="">Select lab room</option>
+              {% for room in lab_rooms %}
+                <option value="{{ room }}">{{ room }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Reservation Date</label>
+            <input type="date" name="reservation_date" id="reservationDate" class="form-control" 
+                   min="{{ now.strftime('%Y-%m-%d') }}" required style="border-radius: 10px;">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Time Slot</label>
+            <select name="time_slot" id="timeSlot" class="form-select" required style="border-radius: 10px;">
+              <option value="">Select time slot</option>
+              {% for slot in time_slots %}
+                <option value="{{ slot }}">{{ slot }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">PC Number</label>
+            <input type="text" name="pc_number" id="pcNumber" class="form-control" 
+                   readonly required style="border-radius: 10px; background: #f8faff;">
+            <small class="text-muted">Click on an available PC in the grid below</small>
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-secondary" onclick="window.history.back()" 
+                    style="border-radius: 10px;">Cancel</button>
+            <button type="submit" class="btn" style="background:#144c94; color:white; border-radius: 10px;">
+              📅 Submit Reservation
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- PC Grid -->
+  <div class="col-lg-7">
+    <div class="dash-card card">
+      <div class="card-header-custom">
+        <div class="header-icon">🖥️</div>
+        PC Availability Map
+      </div>
+      <div class="card-body">
+        <div id="pcGridMessage" class="alert alert-info" style="display:none; border-radius: 10px;"></div>
+        
+        <div id="pcGrid" class="row g-2">
+          <!-- PC Grid will be populated by JavaScript -->
+          <div class="text-center py-5 text-muted">
+            <div style="font-size: 2rem;">🖥️</div>
+            <p>Select Lab Room, Date, and Time Slot to view available PCs</p>
+          </div>
+        </div>
+        
+        <div class="mt-3 d-flex gap-3 justify-content-center">
+          <div><span class="badge" style="background:#10b981; width:20px; height:20px;"></span> Available</div>
+          <div><span class="badge" style="background:#f59e0b; width:20px; height:20px;"></span> Reserved</div>
+          <div><span class="badge" style="background:#ef4444; width:20px; height:20px;"></span> In Use</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const labRoom = document.getElementById('labRoom');
+const reservationDate = document.getElementById('reservationDate');
+const timeSlot = document.getElementById('timeSlot');
+const pcGrid = document.getElementById('pcGrid');
+const pcNumber = document.getElementById('pcNumber');
+const pcGridMessage = document.getElementById('pcGridMessage');
+
+function loadPcGrid() {
+  if (!labRoom.value || !reservationDate.value || !timeSlot.value) {
+    pcGrid.innerHTML = `
+      <div class="text-center py-5 text-muted">
+        <div style="font-size: 2rem;">🖥️</div>
+        <p>Select Lab Room, Date, and Time Slot to view available PCs</p>
+      </div>
+    `;
+    return;
+  }
+  
+  fetch(`/student/get_available_pcs?lab_room=${encodeURIComponent(labRoom.value)}&reservation_date=${reservationDate.value}&time_slot=${encodeURIComponent(timeSlot.value)}`)
+    .then(response => response.json())
+    .then(data => {
+      if (data.error) {
+        pcGridMessage.innerHTML = data.error;
+        pcGridMessage.style.display = 'block';
+        return;
+      }
+      
+      pcGridMessage.style.display = 'none';
+      
+      let html = '';
+      for (let i = 1; i <= 48; i++) {
+        const pc = `PC${i}`;
+        let status = '';
+        let bgColor = '';
+        
+        if (data.reserved.includes(pc)) {
+          status = 'Reserved';
+          bgColor = '#f59e0b';
+        } else if (data.in_use.includes(pc)) {
+          status = 'In Use';
+          bgColor = '#ef4444';
+        } else {
+          status = 'Available';
+          bgColor = '#10b981';
+        }
+        
+        html += `
+          <div class="col-3 col-md-2">
+            <div class="pc-card text-center p-2 rounded-3" 
+                 style="background: ${bgColor}; color: white; cursor: ${status === 'Available' ? 'pointer' : 'not-allowed'}; opacity: ${status === 'Available' ? '1' : '0.7'};"
+                 onclick="${status === 'Available' ? `selectPC('${pc}')` : ''}">
+              <div style="font-size: 0.8rem; font-weight: bold;">${pc}</div>
+              <small style="font-size: 0.65rem;">${status}</small>
+            </div>
+          </div>
+        `;
+      }
+      
+      pcGrid.innerHTML = `<div class="row g-2">${html}</div>`;
+    })
+    .catch(error => {
+      console.error('Error:', error);
+    });
+}
+
+function selectPC(pc) {
+  pcNumber.value = pc;
+  document.querySelectorAll('.pc-card').forEach(card => {
+    card.style.border = 'none';
+    card.style.transform = 'scale(1)';
+    // Match by the onclick attribute value
+    const onclickAttr = card.getAttribute('onclick');
+    if (onclickAttr && onclickAttr.includes(`'${pc}'`)) {
+      card.style.border = '3px solid #144c94';
+      card.style.transform = 'scale(1.05)';
+    }
+  });
+}
+
+labRoom.addEventListener('change', loadPcGrid);
+reservationDate.addEventListener('change', loadPcGrid);
+timeSlot.addEventListener('change', loadPcGrid);
+</script>
+
+<style>
+  .pc-card {
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+  .pc-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  }
+  .dash-card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    background: #fff;
+  }
+  .card-header-custom {
+    background: #fff;
+    border-bottom: 2px solid #eef2ff;
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: #1f2937;
+  }
+  .header-icon {
+    background: #eef3fc;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+  }
+</style>
+
+{% endblock %}

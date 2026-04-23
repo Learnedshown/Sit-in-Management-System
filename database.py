@@ -58,7 +58,8 @@ def setup_database(app):
             address TEXT NOT NULL,
             sessions_remaining INTEGER NOT NULL DEFAULT 30 CHECK(sessions_remaining BETWEEN 0 AND 30),
             total_session_used INTEGER NOT NULL DEFAULT 0 CHECK(total_session_used >= 0),
-            profile_photo TEXT DEFAULT NULL
+            profile_photo TEXT DEFAULT NULL,
+            points INTEGER DEFAULT 0 CHECK(points >= 0)
             )
 
         """)
@@ -76,14 +77,20 @@ def setup_database(app):
         CREATE TABLE IF NOT EXISTS sessions_history(
             session_id INTEGER PRIMARY KEY AUTOINCREMENT,
             student_id INTEGER NOT NULL,
+            reservation_id INTEGER,
             login_time TEXT,
             logout_time TEXT,
             session_date TEXT NOT NULL,
             purpose TEXT,
             pc_number TEXT,
             lab_room TEXT,
+            status TEXT,
+            points_awarded INTEGER DEFAULT 0,
+            is_rewarded INTEGER DEFAULT 0,
             is_deleted BOOLEAN DEFAULT 0,
-            FOREIGN KEY(student_id) REFERENCES students(id)
+            hours_rendered REAL,
+            FOREIGN KEY(student_id) REFERENCES students(id),
+            FOREIGN KEY(reservation_id) REFERENCES reservations(id)
         )
 
 
@@ -99,5 +106,43 @@ def setup_database(app):
         )
         
         """)
+
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS feedback(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            student_id INTEGER,
+            session_id INTEGER UNIQUE,
+            message TEXT NOT NULL,
+            rating INTEGER CHECK(rating BETWEEN 1 AND 5),
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(student_id) REFERENCES students(id),
+            FOREIGN KEY(session_id) REFERENCES sessions_history(session_id)
+        )
+        """)
+
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS reservations(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        student_id INTEGER NOT NULL,
+        purpose TEXT NOT NULL,
+        reservation_date TEXT NOT NULL,
+        time_slot TEXT NOT NULL,
+        lab_room TEXT NOT NULL,
+        pc_number TEXT NOT NULL,
+        status TEXT DEFAULT 'Pending',
+        session_id INTEGER,
+        approved_by INTEGER,
+        approved_at TIMESTAMP,
+        admin_remarks TEXT,
+        cancelled_by TEXT,
+        cancelled_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(student_id) REFERENCES students(id),
+        FOREIGN KEY(session_id) REFERENCES sessions_history(session_id),
+        FOREIGN KEY(approved_by) REFERENCES admins(id)
+        )
+        """)
         db.commit()
         seed_admin_data(db)
+    

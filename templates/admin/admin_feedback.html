@@ -1,0 +1,243 @@
+{% extends "admin/admin_base.html" %}
+
+{% block title %}Student Feedback{% endblock %}
+
+{% block content %}
+
+<!-- Page Header -->
+<div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+  <div>
+    <h4>📝 Student Feedback</h4>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="{{ url_for('admin_dashboard') }}">Dashboard</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Feedback</li>
+      </ol>
+    </nav>
+  </div>
+</div>
+
+<!-- Stats Cards Row -->
+<div class="row g-3 mb-4">
+  <div class="col-12 col-sm-4">
+    <div class="dash-card card">
+      <div class="card-body p-3">
+        <div class="stat-tile" style="background:#eef3fc;">
+          <div class="stat-icon" style="background:#dbeafe;">📊</div>
+          <div>
+            <div class="stat-value">{{ feedback|length }}</div>
+            <div class="stat-label">Total Feedback</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-sm-4">
+    <div class="dash-card card">
+      <div class="card-body p-3">
+        <div class="stat-tile" style="background:#ecfdf5;">
+          <div class="stat-icon" style="background:#d1fae5;">⭐</div>
+          <div>
+            <div class="stat-value" style="color:#065f46;">
+              {% set avg_rating = feedback|map(attribute='rating')|sum / feedback|length if feedback|length > 0 else 0 %}
+              {{ "%.1f"|format(avg_rating) }}
+            </div>
+            <div class="stat-label">Average Rating</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-sm-4">
+    <div class="dash-card card">
+      <div class="card-body p-3">
+        <div class="stat-tile" style="background:#faf5ff;">
+          <div class="stat-icon" style="background:#ede9fe;">❤️</div>
+          <div>
+            <div class="stat-value" style="color:#4c1d95;">
+              {% set positive = feedback|selectattr('rating', '>=', 4)|list|length %}
+              {{ positive }}
+            </div>
+            <div class="stat-label">Positive Reviews (4-5⭐)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Feedback List -->
+<div class="row g-4">
+  <div class="col-12">
+    <div class="dash-card card">
+      <div class="card-header-custom">
+        <div class="header-icon">💬</div>
+        All Student Feedback
+      </div>
+      <div class="card-body p-0">
+
+        <!-- Filter/Search Bar -->
+        <div class="p-3 border-bottom" style="background:#f8faff;">
+          <div class="row g-2 align-items-center">
+            <div class="col-md-6">
+              <input type="text" id="searchFeedback" class="form-control" 
+                     placeholder="🔍 Search feedback..." 
+                     style="border-radius:8px; font-size:0.875rem;">
+            </div>
+            <div class="col-md-6">
+              <select id="filterRating" class="form-select" style="border-radius:8px; font-size:0.875rem;">
+                <option value="all">All Ratings</option>
+                <option value="5">5 Stars ⭐⭐⭐⭐⭐</option>
+                <option value="4">4 Stars ⭐⭐⭐⭐</option>
+                <option value="3">3 Stars ⭐⭐⭐</option>
+                <option value="2">2 Stars ⭐⭐</option>
+                <option value="1">1 Star ⭐</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Feedback List -->
+        <div class="scroll-area" style="max-height:500px; overflow-y:auto;">
+          {% for f in feedback %}
+          <div class="feedback-item p-3 border-bottom" 
+               data-rating="{{ f.rating }}"
+               data-message="{{ f.message|lower }}">
+            <div class="d-flex align-items-start gap-3">
+              <!-- Rating Icon -->
+              <div class="flex-shrink-0">
+                {% if f.rating >= 4 %}
+                  <div class="rounded-circle d-flex align-items-center justify-content-center" 
+                       style="width:48px; height:48px; background:#d1fae5;">
+                    <span style="font-size:1.5rem;">😊</span>
+                  </div>
+                {% elif f.rating == 3 %}
+                  <div class="rounded-circle d-flex align-items-center justify-content-center" 
+                       style="width:48px; height:48px; background:#fef3c7;">
+                    <span style="font-size:1.5rem;">😐</span>
+                  </div>
+                {% else %}
+                  <div class="rounded-circle d-flex align-items-center justify-content-center" 
+                       style="width:48px; height:48px; background:#fee2e2;">
+                    <span style="font-size:1.5rem;">😞</span>
+                  </div>
+                {% endif %}
+              </div>
+
+              <!-- Feedback Content -->
+              <div class="flex-grow-1">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+                  <div>
+                    <!-- Stars -->
+                    <div class="mb-1">
+                      {% for i in range(5) %}
+                        {% if i < f.rating %}
+                          <span style="color:#fbbf24; font-size:1rem;">★</span>
+                        {% else %}
+                          <span style="color:#d1d5db; font-size:1rem;">★</span>
+                        {% endif %}
+                      {% endfor %}
+                      <span class="ms-2 text-muted" style="font-size:0.75rem;">{{ f.rating }}/5</span>
+                    </div>
+                    <!-- Student info if available -->
+                    {% if f.student_name %}
+                      <span class="badge rounded-pill" style="background:#144c94; font-size:0.68rem;">
+                        👤 {{ f.student_name }}
+                      </span>
+                    {% endif %}
+                  </div>
+                  <span class="text-muted" style="font-size:0.75rem;">
+                    📅 {{ f.created_at }}
+                  </span>
+                </div>
+                
+                <p class="mb-0" style="font-size:0.875rem; color:#374151; line-height:1.5;">
+                  {{ f.message }}
+                </p>
+              </div>
+            </div>
+          </div>
+          {% else %}
+            <div class="text-center py-5">
+              <div style="font-size:3rem; margin-bottom:12px;">💬</div>
+              <h6 class="text-muted">No feedback yet</h6>
+              <p class="small text-muted">Student feedback will appear here</p>
+            </div>
+          {% endfor %}
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Filter/Search JavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const searchInput = document.getElementById('searchFeedback');
+  const ratingFilter = document.getElementById('filterRating');
+  const feedbackItems = document.querySelectorAll('.feedback-item');
+
+  function filterFeedback() {
+    const searchTerm = searchInput.value.toLowerCase();
+    const ratingValue = ratingFilter.value;
+
+    feedbackItems.forEach(item => {
+      const itemRating = item.getAttribute('data-rating');
+      const itemMessage = item.getAttribute('data-message');
+      
+      let showByRating = true;
+      let showBySearch = true;
+      
+      if (ratingValue !== 'all') {
+        showByRating = itemRating === ratingValue;
+      }
+      
+      if (searchTerm) {
+        showBySearch = itemMessage.includes(searchTerm);
+      }
+      
+      if (showByRating && showBySearch) {
+        item.style.display = '';
+      } else {
+        item.style.display = 'none';
+      }
+    });
+  }
+
+  searchInput.addEventListener('keyup', filterFeedback);
+  ratingFilter.addEventListener('change', filterFeedback);
+});
+</script>
+
+<style>
+  .feedback-item {
+    transition: all 0.2s ease;
+  }
+  
+  .feedback-item:hover {
+    background-color: #f8faff;
+  }
+  
+  .scroll-area::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .scroll-area::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+  }
+  
+  .scroll-area::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+  }
+  
+  .scroll-area::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+  }
+</style>
+
+{% endblock %}

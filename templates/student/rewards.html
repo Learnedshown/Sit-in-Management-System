@@ -1,0 +1,58 @@
+{% extends "student/dashboardbase.html" %}
+
+{% block content %}
+
+<div class="container mt-4">
+  <h3>My Rewards Dashboard</h3>
+  
+  <div class="row mt-4">
+    <!-- Points System Card -->
+    <div class="col-md-4">
+      <div class="card text-white bg-primary mb-3">
+        <div class="card-header">Points System</div>
+        <div class="card-body">
+          <h5 class="card-title">{{ points }} / {{ total_possible_points }} points</h5>
+          <p class="card-text">Points Rate: {{ points_rate }}%</p>
+          <p class="card-text">Rank: <strong>{{ rank }}</strong></p>
+          <p class="card-text"><small>1 point per awarded session</small></p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Task Completion Card -->
+    <div class="col-md-4">
+      <div class="card text-white bg-success mb-3">
+        <div class="card-header">Task Completion</div>
+        <div class="card-body">
+          <h5 class="card-title">{{ tasks_completed }} / {{ tasks_total }} tasks</h5>
+          <p class="card-text">Completed: {{ tasks_completed }}</p>
+          <p class="card-text">Incomplete: {{ tasks_incomplete }}</p>
+          <p class="card-text">Completion Rate: {{ completion_rate }}%</p>
+          <p class="card-text"><small>Separate from points system</small></p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Hours Card -->
+    <div class="col-md-4">
+      <div class="card text-white bg-info mb-3">
+        <div class="card-header">Hours Rendered</div>
+        <div class="card-body">
+          <h5 class="card-title">{{ total_hours }} hours</h5>
+          <p class="card-text">Total hours completed</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="alert alert-secondary mt-3">
+    <strong>How it works:</strong>
+    <ul>
+      <li><strong>Points System:</strong> You get 1 point per session when the admin awards it (independent of task completion)</li>
+      <li><strong>Task Completion:</strong> Tracks whether you completed the task (Complete/Incomplete) - this does NOT affect your points</li>
+      <li><strong>Rank:</strong> Based on total points earned only</li>
+    </ul>
+  </div>
+</div>
+
+{% endblock %}

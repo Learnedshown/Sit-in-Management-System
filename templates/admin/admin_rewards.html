@@ -1,0 +1,201 @@
+{% extends "admin/admin_base.html" %}
+
+{% block content %}
+
+<!-- Page Header -->
+<div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+  <div>
+    <h4>🎁 Rewards System</h4>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="{{ url_for('admin_dashboard') }}">Dashboard</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Rewards</li>
+      </ol>
+    </nav>
+  </div>
+</div>
+
+<!-- Info Alert -->
+<div class="alert alert-info mb-4" style="background:#eef3fc; border: none; border-radius: 12px; border-left: 4px solid #144c94;">
+  <div class="d-flex align-items-start gap-2">
+    <span style="font-size: 1.2rem;">ℹ️</span>
+    <div>
+      <strong class="d-block mb-1">How it works:</strong>
+      <ul class="mb-0 ps-3" style="font-size: 0.875rem;">
+        <li><strong>Mark Task</strong> = Click the button to mark task as Complete/Incomplete</li>
+        <li><strong>Award Points</strong> = Choose to award 1 point (only for Complete tasks)</li>
+        <li>Both actions are done in <strong>one step</strong> through the modal</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Rewards Table -->
+<div class="dash-card card">
+  <div class="card-header-custom">
+    <div class="header-icon">🏅</div>
+    Student Sessions
+  </div>
+  <div class="card-body p-0">
+    <div style="overflow-x: auto;">
+      <table class="table table-hover mb-0" style="border-radius: 12px; overflow: hidden;">
+        <thead style="background:#f8faff;">
+          <tr>
+            <th style="padding: 1rem; font-size: 0.85rem; font-weight: 600; color: #4b5563;">ID Number</th>
+            <th style="padding: 1rem; font-size: 0.85rem; font-weight: 600; color: #4b5563;">Name</th>
+            <th style="padding: 1rem; font-size: 0.85rem; font-weight: 600; color: #4b5563;">Purpose</th>
+            <th style="padding: 1rem; font-size: 0.85rem; font-weight: 600; color: #4b5563;">Date</th>
+            <th style="padding: 1rem; font-size: 0.85rem; font-weight: 600; color: #4b5563;">Task Status</th>
+            <th style="padding: 1rem; font-size: 0.85rem; font-weight: 600; color: #4b5563;">Points Earned</th>
+            <th style="padding: 1rem; font-size: 0.85rem; font-weight: 600; color: #4b5563;">Action</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for r in records %}
+          <tr style="border-bottom: 1px solid #f0f0f0;">
+            <td style="padding: 1rem; font-size: 0.875rem; color: #374151;">{{ r.id_number }}</td>
+            <td style="padding: 1rem; font-size: 0.875rem; color: #374151;">{{ r.first_name }} {{ r.last_name }}</td>
+            <td style="padding: 1rem; font-size: 0.875rem; color: #374151;">{{ r.purpose }}</td>
+            <td style="padding: 1rem; font-size: 0.875rem; color: #374151;">{{ r.session_date }}</td>
+
+            <!-- TASK STATUS -->
+            <td style="padding: 1rem;">
+              {% if r.status == "Complete" %}
+                <span style="background:#d1fae5; color:#065f46; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 500;">✅ Complete</span>
+              {% elif r.status == "Incomplete" %}
+                <span style="background:#fee2e2; color:#991b1b; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 500;">❌ Incomplete</span>
+              {% else %}
+                <span style="background:#fef3c7; color:#92400e; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 500;">⏳ Not Marked</span>
+              {% endif %}
+            </td>
+
+            <!-- POINTS EARNED -->
+            <td style="padding: 1rem;">
+              <strong style="color:#144c94;">{{ r.points_awarded or 0 }}</strong> point(s)
+            </td>
+
+            <!-- ACTION - Combined Mark Task & Award Point -->
+            <td style="padding: 1rem;">
+              {% if not r.status and not r.is_rewarded %}
+                <button class="btn btn-sm" 
+                        style="background:#144c94; color:#fff; border: none; border-radius: 8px; padding: 6px 16px; font-size: 0.75rem; font-weight: 500;"
+                        onclick="openTaskModal({{ r.session_id }}, '{{ r.first_name }} {{ r.last_name }}')">
+                  📋 Mark Task & Award
+                </button>
+              {% elif r.status %}
+                <span style="background:#e5e7eb; color:#4b5563; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 500;">
+                  {% if r.status == "Complete" %}✅ Marked Complete
+                  {% else %}❌ Marked Incomplete{% endif %}
+                  {% if r.is_rewarded %} (+1 point){% endif %}
+                </span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Task & Points Modal -->
+<div class="modal fade" id="taskModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <form method="POST" id="taskForm">
+      <div class="modal-content" style="border-radius: 16px;">
+        <div class="modal-header" style="border-bottom: 2px solid #eef2ff;">
+          <h5 class="modal-title">📋 Mark Task & Award Points</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" name="session_id" id="modalSessionId">
+          
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Student</label>
+            <p id="modalStudentName" class="mb-0" style="color: #144c94; font-weight: 500;"></p>
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Task Status</label>
+            <select name="status" class="form-select" required style="border-radius: 10px;">
+              <option value="">Select status...</option>
+              <option value="Complete">✅ Complete</option>
+              <option value="Incomplete">❌ Incomplete</option>
+            </select>
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Award Point?</label>
+            <select name="award_point" class="form-select" style="border-radius: 10px;">
+              <option value="no">❌ No, just mark task</option>
+              <option value="yes">✅ Yes, award 1 point</option>
+            </select>
+            <small class="text-muted">Points can only be awarded for Complete tasks</small>
+          </div>
+          
+        </div>
+        <div class="modal-footer" style="background: #f8faff; border-top: 1px solid #eef2ff;">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal" style="border-radius: 8px;">Cancel</button>
+          <button type="submit" class="btn" style="background:#144c94; color:white; border-radius: 8px;">
+            ✅ Submit
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function openTaskModal(sessionId, studentName) {
+    document.getElementById('modalSessionId').value = sessionId;
+    document.getElementById('modalStudentName').innerText = studentName;
+    document.getElementById('taskForm').action = '/admin/mark_and_reward/' + sessionId;
+    new bootstrap.Modal(document.getElementById('taskModal')).show();
+  }
+</script>
+
+<style>
+  .dash-card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    background: #fff;
+  }
+  
+  .card-header-custom {
+    background: #fff;
+    border-bottom: 2px solid #eef2ff;
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 1rem;
+  }
+  
+  .header-icon {
+    background: #eef3fc;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    font-size: 1rem;
+  }
+  
+  .table-hover tbody tr:hover {
+    background-color: #f8faff !important;
+    transition: background 0.2s ease;
+  }
+  
+  .btn:hover {
+    opacity: 0.85;
+    transform: translateY(-1px);
+    transition: all 0.2s ease;
+  }
+</style>
+
+{% endblock %}

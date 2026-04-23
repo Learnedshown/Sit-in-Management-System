@@ -1,0 +1,157 @@
+{% extends "student/dashboardbase.html" %}
+
+{% block title %}My Reservations{% endblock %}
+
+{% block content %}
+
+<!-- Page Header -->
+<div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+  <div>
+    <h4>📋 My Reservations</h4>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item active">My Reservations</li>
+      </ol>
+    </nav>
+  </div>
+  <a href="/student/reservation/make" class="btn" style="background:#144c94; color:white; border-radius: 10px;">
+    + New Reservation
+  </a>
+</div>
+
+<!-- Reservations List -->
+<div class="dash-card card">
+  <div class="card-header-custom">
+    <div class="header-icon">📅</div>
+    All Reservations
+  </div>
+  <div class="card-body p-0">
+
+    {% if reservations %}
+      {% for r in reservations %}
+        <div class="reservation-item p-4 border-bottom" style="transition: all 0.2s ease;">
+          <div class="d-flex align-items-start justify-content-between flex-wrap gap-3">
+            
+            <!-- Left side - Reservation Info -->
+            <div class="flex-grow-1">
+              <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+                <!-- Status Badge -->
+                {% if r.status == 'Pending' %}
+                  <span class="badge" style="background:#fef3c7; color:#92400e; padding: 6px 12px;">
+                    ⏳ Pending
+                  </span>
+                {% elif r.status == 'Approved' %}
+                  <span class="badge" style="background:#d1fae5; color:#065f46; padding: 6px 12px;">
+                    ✅ Approved
+                  </span>
+                {% elif r.status == 'Rejected' %}
+                  <span class="badge" style="background:#fee2e2; color:#991b1b; padding: 6px 12px;">
+                    ❌ Rejected
+                  </span>
+                {% elif r.status == 'Cancelled' %}
+                  <span class="badge" style="background:#f3f4f6; color:#4b5563; padding: 6px 12px;">
+                    🚫 Cancelled
+                  </span>
+                {% elif r.status == 'Completed' %}
+                  <span class="badge" style="background:#dbeafe; color:#1e40af; padding: 6px 12px;">
+                    ✓ Completed
+                  </span>
+                {% endif %}
+                
+                <!-- Date -->
+                <span class="text-muted" style="font-size: 0.8rem;">
+                  📅 {{ r.reservation_date }}
+                </span>
+                
+                <!-- Time Slot -->
+                <span class="text-muted" style="font-size: 0.8rem;">
+                  ⏰ {{ r.time_slot }}
+                </span>
+              </div>
+              
+              <div class="mb-2">
+                <span style="font-weight: 600;">Lab:</span> {{ r.lab_room }} &nbsp;|&nbsp;
+                <span style="font-weight: 600;">PC:</span> {{ r.pc_number }} &nbsp;|&nbsp;
+                <span style="font-weight: 600;">Purpose:</span> {{ r.purpose }}
+              </div>
+              
+              {% if r.admin_remarks %}
+                <div class="mt-2 p-2 rounded-3" style="background: #f8faff; font-size: 0.8rem;">
+                  <strong>📝 Admin Note:</strong> {{ r.admin_remarks }}
+                </div>
+              {% endif %}
+              
+              {% if r.status == 'Approved' and r.reservation_date == now.strftime('%Y-%m-%d') %}
+                <div class="mt-3">
+                  <form method="POST" action="/student/start_reserved_session/{{ r.id }}" style="display: inline;">
+                    <button type="submit" class="btn btn-sm" style="background:#10b981; color:white; border-radius: 8px;" 
+                            onclick="return confirm('Start your reserved session now?')">
+                      🚀 Start Session
+                    </button>
+                  </form>
+                </div>
+              {% endif %}
+            </div>
+            
+            <!-- Right side - Action Buttons -->
+            <div>
+              {% if r.status == 'Pending' %}
+                <form method="POST" action="/student/reservation/cancel/{{ r.id }}" style="display: inline;">
+                  <button type="submit" class="btn btn-sm btn-outline-danger" style="border-radius: 8px;" 
+                          onclick="return confirm('Cancel this reservation?')">
+                    Cancel
+                  </button>
+                </form>
+              {% endif %}
+            </div>
+            
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="text-center py-5">
+        <div style="font-size: 3rem;">📭</div>
+        <h6 class="text-muted">No reservations yet</h6>
+        <p class="small text-muted">Click "New Reservation" to book a PC</p>
+      </div>
+    {% endif %}
+    
+  </div>
+</div>
+
+<style>
+  .reservation-item:hover {
+    background-color: #f8faff;
+  }
+  
+  .dash-card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    background: #fff;
+  }
+  
+  .card-header-custom {
+    background: #fff;
+    border-bottom: 2px solid #eef2ff;
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: #1f2937;
+  }
+  
+  .header-icon {
+    background: #eef3fc;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+  }
+</style>
+
+{% endblock %}

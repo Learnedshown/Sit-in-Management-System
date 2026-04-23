@@ -1,0 +1,439 @@
+{% extends "student/dashboardbase.html" %}
+
+{% block title %}Sit-in History{% endblock %}
+
+{% block content %}
+
+<!-- Page Header -->
+<div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+  <div>
+    <h4>📜 Sit-in History</h4>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="/dashboard" class="text-decoration-none">Home</a></li>
+        <li class="breadcrumb-item active">Sit-in History</li>
+      </ol>
+    </nav>
+  </div>
+</div>
+
+<!-- Table Card -->
+<div class="dash-card card">
+  <div class="card-header-custom d-flex align-items-center justify-content-between">
+    <div class="d-flex align-items-center gap-2">
+      <div class="header-icon">📊</div>
+      All Records
+    </div>
+    <span class="badge rounded-pill" id="recordCount"
+          style="background:#eef3fc; color:#144c94; font-size:0.75rem; font-weight:600; padding:6px 12px;">
+      {{ history|length }} records
+    </span>
+  </div>
+
+  <div class="card-body p-0">
+
+    <!-- Toolbar -->
+    <div class="px-4 py-3 border-bottom d-flex align-items-center justify-content-between flex-wrap gap-2"
+         style="background:#f8faff;">
+
+      <div class="d-flex align-items-center gap-2">
+        <span style="color:#6b7280; font-size:0.875rem;">🔍</span>
+        <input type="text" id="tableSearch"
+               class="form-control form-control-sm border-0 shadow-none"
+               placeholder="Search by date, purpose, lab, PC…"
+               style="background:transparent; font-size:0.875rem; max-width:300px;"
+               oninput="applyFilters()">
+      </div>
+
+      <div class="d-flex align-items-center gap-2">
+        <label class="text-muted mb-0" style="font-size:0.78rem;">Rows per page</label>
+        <select id="pageSizeSelect" class="form-select form-select-sm"
+                style="width:70px; font-size:0.8rem; border-radius:8px;" onchange="applyFilters()">
+          <option value="10" selected>10</option>
+          <option value="25">25</option>
+          <option value="50">50</option>
+          <option value="100">100</option>
+        </select>
+      </div>
+
+    </div>
+
+    <div class="table-responsive">
+      <table class="table mb-0" style="font-size:0.875rem;">
+        <thead style="background:#f0f4f8;">
+          <tr>
+            <th class="px-4 py-3 border-0 text-muted fw-semibold sortable"
+                style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.5px; cursor:pointer;"
+                onclick="sortBy(0)">Date <span class="sort-icon">↕️</span></th>
+
+            <th class="py-3 border-0 text-muted fw-semibold sortable"
+                style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.5px; cursor:pointer;"
+                onclick="sortBy(1)">Login <span class="sort-icon">↕️</span></th>
+
+            <th class="py-3 border-0 text-muted fw-semibold sortable"
+                style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.5px; cursor:pointer;"
+                onclick="sortBy(2)">Logout <span class="sort-icon">↕️</span></th>
+
+            <th class="py-3 border-0 text-muted fw-semibold"
+                style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.5px;">Duration</th>
+
+            <th class="py-3 border-0 text-muted fw-semibold"
+                style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.5px;">Purpose</th>
+
+            <th class="py-3 border-0 text-muted fw-semibold"
+                style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.5px;">PC</th>
+
+            <th class="py-3 border-0 text-muted fw-semibold"
+                style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.5px;">Lab</th>
+
+            <th class="py-3 border-0 text-muted fw-semibold"
+                style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.5px;">Feedback</th>
+          </tr>
+        </thead>
+        <tbody id="recordsTableBody"></tbody>
+      </table>
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="text-center py-5 text-muted" style="display:none;">
+      <div style="font-size:2.5rem;">📭</div>
+      <p class="fw-semibold mb-1">No records found</p>
+      <p class="small">Try adjusting your search or filters</p>
+    </div>
+
+    <!-- Pagination -->
+    <div class="px-4 py-3 border-top d-flex align-items-center justify-content-between flex-wrap gap-2"
+         style="background:#f8faff;">
+      <p id="paginationInfo" class="mb-0 text-muted small"></p>
+      <ul class="pagination pagination-sm mb-0 gap-1" id="paginationList"></ul>
+    </div>
+
+  </div>
+</div>
+
+<!-- Submit Feedback Modal -->
+<div class="modal fade" id="feedbackModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <form method="POST" id="feedbackForm">
+      <div class="modal-content" style="border-radius: 16px;">
+
+        <div class="modal-header" style="border-bottom: 2px solid #eef2ff;">
+          <h5 class="modal-title">
+            <span style="font-size: 1.2rem;">📝</span> Submit Feedback
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+          <input type="hidden" name="session_id" id="modalSessionId">
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold" style="font-size: 0.85rem;">Message</label>
+            <textarea name="message" class="form-control" rows="4" required
+                      placeholder="Share your experience with this sit-in session..."
+                      style="border-radius: 10px; resize: none;"></textarea>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold" style="font-size: 0.85rem;">Rating</label>
+            <select name="rating" class="form-select" required style="border-radius: 10px;">
+              <option value="">Select rating</option>
+              <option value="5">⭐⭐⭐⭐⭐ Excellent (5)</option>
+              <option value="4">⭐⭐⭐⭐ Good (4)</option>
+              <option value="3">⭐⭐⭐ Average (3)</option>
+              <option value="2">⭐⭐ Poor (2)</option>
+              <option value="1">⭐ Very Poor (1)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-footer" style="background: #f8faff; border-top: 1px solid #eef2ff;">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal"
+                  style="border-radius: 8px;">Cancel</button>
+          <button type="submit" class="btn" style="background:#144c94; color:white; border-radius: 8px;">
+            ✨ Submit Feedback
+          </button>
+        </div>
+
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- View Feedback Modal -->
+<div class="modal fade" id="viewFeedbackModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius: 16px;">
+      <div class="modal-header" style="border-bottom: 2px solid #eef2ff;">
+        <h5 class="modal-title">
+          <span style="font-size: 1.2rem;">💬</span> Feedback Details
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="viewFeedbackStars" class="mb-3" style="font-size: 1.2rem;"></div>
+        <div class="mb-3">
+          <label class="fw-semibold mb-2" style="font-size: 0.85rem; color: #374151;">Message:</label>
+          <p id="viewFeedbackMessage" class="p-3 rounded-3" style="background: #f8faff; color: #4b5563; font-size: 0.875rem;"></p>
+        </div>
+        <div>
+          <label class="fw-semibold mb-2" style="font-size: 0.85rem; color: #374151;">Session Date:</label>
+          <p id="viewFeedbackDate" class="text-muted" style="font-size: 0.875rem;"></p>
+        </div>
+      </div>
+      <div class="modal-footer" style="background: #f8faff; border-top: 1px solid #eef2ff;">
+        <button type="button" class="btn" data-bs-dismiss="modal"
+                style="background:#144c94; color:white; border-radius: 8px;">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// DATA
+var RAW_RECORDS = [
+{% for h in history %}
+{
+  session_id: {{ h.session_id | tojson }},
+  session_date: {{ h.session_date | tojson }},
+  login_time: {{ h.login_time | tojson }},
+  logout_time: {{ h.logout_time | default('') | tojson }},
+  purpose: {{ h.purpose | tojson }},
+  pc_number: {{ h.pc_number | tojson }},
+  lab_room: {{ h.lab_room | tojson }},
+  message: {{ h.message | default('') | tojson }},
+  rating: {{ h.rating | default('') | tojson }}
+}{% if not loop.last %},{% endif %}
+{% endfor %}
+];
+
+var filtered = RAW_RECORDS.slice();
+var currentPage = 1;
+
+// DURATION CALCULATION
+function calcDuration(date, login, logout) {
+  if (!logout) return "Active";
+  var start = new Date(date + " " + login);
+  var end   = new Date(date + " " + logout);
+  var mins = Math.floor((end - start)/60000);
+  var h = Math.floor(mins/60);
+  var m = mins%60;
+  return h ? h+"h "+m+"m" : m+"m";
+}
+
+// RENDER FUNCTION
+function render() {
+  var size = parseInt(document.getElementById("pageSizeSelect").value);
+  var total = filtered.length;
+  var pages = Math.max(1, Math.ceil(total/size));
+
+  if (currentPage > pages) currentPage = pages;
+
+  var start = (currentPage-1)*size;
+  var slice = filtered.slice(start, start+size);
+
+  var html = "";
+
+  slice.forEach(function(r){
+    var feedback = "";
+
+    if (r.message && r.rating) {
+      // Show "View Feedback" button for submitted feedback
+      var stars = "";
+      for (var i = 1; i <= 5; i++) {
+        stars += i <= r.rating ? "⭐" : "☆";
+      }
+      feedback = `
+        <button class="btn btn-sm rounded-3 px-3" 
+                style="background:#10b981; color:white; font-size:0.7rem; font-weight:500; border:none;"
+                onclick="viewFeedback(${r.session_id}, '${r.message.replace(/'/g, "\\'")}', ${r.rating}, '${r.session_date}')">
+          👁️ View Feedback
+        </button>
+      `;
+    } else if (r.logout_time) {
+      // Show "Send Feedback" button for completed sessions without feedback
+      feedback = `
+        <button class="btn btn-sm rounded-3 px-3" 
+                style="background:#144c94; color:white; font-size:0.7rem; font-weight:500; border:none;"
+                onclick="openFeedbackModal(${r.session_id})">
+          📝 Send Feedback
+        </button>
+      `;
+    } else {
+      // Active session - cannot give feedback yet
+      feedback = '<span class="badge" style="background:#fef3c7; color:#92400e; padding: 4px 10px; border-radius: 20px; font-size:0.7rem;">⏳ Active Session</span>';
+    }
+
+    html += `
+    <tr class="record-row border-bottom" style="transition: background 0.2s ease;">
+      <td class="px-4 py-3" style="color: #374151;">${r.session_date}</td>
+      <td class="py-3" style="color: #374151;">${r.login_time}</td>
+      <td class="py-3" style="color: #374151;">${r.logout_time || '<span class="text-success fw-semibold">Active</span>'}</td>
+      <td class="py-3"><span class="badge" style="background:#eef3fc; color:#144c94; font-weight:500;">${calcDuration(r.session_date,r.login_time,r.logout_time)}</span></td>
+      <td class="py-3" style="color: #374151;">${r.purpose}</td>
+      <td class="py-3"><span style="background:#f3f4f6; padding:4px 8px; border-radius:6px; font-family: monospace;">${r.pc_number}</span></td>
+      <td class="py-3">Room ${r.lab_room}</td>
+      <td class="py-3">${feedback}</td>
+    </tr>`;
+  });
+
+  document.getElementById("recordsTableBody").innerHTML = html;
+  document.getElementById("recordCount").innerHTML = total + " records";
+
+  document.getElementById("emptyState").style.display = total===0 ? "block":"none";
+
+  document.getElementById("paginationInfo").innerHTML =
+    `Showing ${start+1} – ${Math.min(start+size,total)} of ${total}`;
+
+  buildPagination(pages);
+}
+
+// PAGINATION
+function buildPagination(pages){
+  var list = document.getElementById("paginationList");
+  var html = "";
+
+  for(let i=1;i<=pages;i++){
+    html += `<li class="page-item ${i===currentPage?"active":""}">
+      <a class="page-link" href="#" onclick="goPage(${i})" style="border-radius: 6px;">${i}</a></li>`;
+  }
+
+  list.innerHTML = html;
+}
+
+function goPage(p){ currentPage=p; render(); }
+
+// FILTER
+function applyFilters(){
+  var q = document.getElementById("tableSearch").value.toLowerCase();
+
+  filtered = RAW_RECORDS.filter(r =>
+    (r.session_date && r.session_date.toLowerCase().includes(q)) ||
+    (r.purpose && r.purpose.toLowerCase().includes(q)) ||
+    (r.lab_room && r.lab_room.toLowerCase().includes(q)) ||
+    (r.pc_number && r.pc_number.toLowerCase().includes(q))
+  );
+
+  currentPage=1;
+  render();
+}
+
+// SORT FUNCTION
+var sortDirs = {};
+
+function sortBy(i){
+  var keys = ["session_date","login_time","logout_time"];
+  
+  sortDirs[i] = !sortDirs[i];
+  var asc = sortDirs[i];
+
+  filtered.sort(function(a,b){
+    var key = keys[i];
+    var va = a[key] || "";
+    var vb = b[key] || "";
+
+    if (key === "session_date") {
+      return asc
+        ? new Date(va) - new Date(vb)
+        : new Date(vb) - new Date(va);
+    }
+
+    if (key === "login_time" || key === "logout_time") {
+      return asc
+        ? new Date("1970-01-01 " + va) - new Date("1970-01-01 " + vb)
+        : new Date("1970-01-01 " + vb) - new Date("1970-01-01 " + va);
+    }
+
+    va = String(va).toLowerCase();
+    vb = String(vb).toLowerCase();
+
+    if (va < vb) return asc ? -1 : 1;
+    if (va > vb) return asc ? 1 : -1;
+    return 0;
+  });
+
+  currentPage = 1;
+  render();
+}
+
+function openFeedbackModal(sessionId) {
+  document.getElementById("modalSessionId").value = sessionId;
+  document.getElementById("feedbackForm").action = "/student/submit_feedback/" + sessionId;
+  var modal = new bootstrap.Modal(document.getElementById("feedbackModal"));
+  modal.show();
+}
+
+function viewFeedback(sessionId, message, rating, sessionDate) {
+  // Generate stars
+  var stars = "";
+  for (var i = 1; i <= 5; i++) {
+    stars += i <= rating ? "⭐" : "☆";
+  }
+  
+  document.getElementById("viewFeedbackStars").innerHTML = stars;
+  document.getElementById("viewFeedbackMessage").innerHTML = message;
+  document.getElementById("viewFeedbackDate").innerHTML = sessionDate;
+  
+  var modal = new bootstrap.Modal(document.getElementById("viewFeedbackModal"));
+  modal.show();
+}
+
+// Initial render
+render();
+</script>
+
+<style>
+  .record-row:hover {
+    background-color: #f8faff !important;
+  }
+  
+  .page-link {
+    color: #144c94;
+    border: none;
+    padding: 6px 10px;
+  }
+  
+  .page-item.active .page-link {
+    background: #144c94;
+    color: white;
+    border-radius: 6px;
+  }
+  
+  .page-item .page-link:hover {
+    background: #eef3fc;
+    color: #144c94;
+  }
+  
+  .sortable:hover {
+    background: #e8ecf0;
+  }
+  
+  .dash-card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    background: #fff;
+  }
+  
+  .card-header-custom {
+    background: #fff;
+    border-bottom: 2px solid #eef2ff;
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .header-icon {
+    background: #eef3fc;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    font-size: 1rem;
+  }
+</style>
+
+{% endblock %}
